@@ -9,6 +9,8 @@ now in an ugly and more or less non-maintainable state ...
 If you don't have a good reason to use this add-on don't. Use glutanimates
 original version.
 
+This add-on incorporates some functions from Anki and the Advanced Browser.
+
 glutanimates version has the following comment on top:
 
     minimal modification of
@@ -32,13 +34,13 @@ glutanimates version has the following comment on top:
 
 ############## USER CONFIGURATION START ##############
 
-BG_COLOR = "#dedede"
 SHOW_LONG_DECK_OPTIONS = False
 SHOW_BRIEF_DECK_OPTONS = True
 TRY_TO_SHOW_ORIGvMOD_SCHEDULER = True
 SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD = False
 MULTILINE_LONG_OPTION_GROUP_NAMES = True
-HIDE_TIME_FROM_REVLOG = True
+HIDE_TIME_COLUMN_FROM_REVLOG = True
+NUM_OF_REVS = 3 # how many prior reviews should be shown in table for current and prior card
 HIGHLIGHT_COLORS = True 
 LOW_CRITICAL_COLOR = "Red"
 HIGH_CRITICAL_COLOR = "Blue"
@@ -49,7 +51,25 @@ HIGH_CRITICAL_COLOR = "Blue"
 IVL_MOD_COLOR_THRESHOLDS = (70,110)
 LAPSE_MOD_COLOR_THRESHOLDS= (30,70) 
 
-
+CSSSTYLING = """
+body {
+    background-color: #dedede;
+    margin: 8px;
+}
+p { 
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+h1,h2,h3,h4{
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+"""
 ##############  USER CONFIGURATION END  ##############
 
 
@@ -131,7 +151,7 @@ class StatsSidebar(object):
         s = "<table width=100%%><tr><th align=left>%s</th>" % _("Date")
         s += ("<th align=right>%s</th>" * 5) % (
             _("Type"), _("Rat"), _("Ivl"), "IntDate", _("Ease"))
-        if not HIDE_TIME_FROM_REVLOG:
+        if not HIDE_TIME_COLUMN_FROM_REVLOG:
             s += ("<th align=right>%s</th>") % (_("Time"))
         cnt = 0
         limitentries = list(reversed(entries))[:limit]
@@ -175,7 +195,7 @@ class StatsSidebar(object):
                 int_due
                 ,
                 "%d%%" % (factor / 10) if factor else "")
-            if not HIDE_TIME_FROM_REVLOG:
+            if not HIDE_TIME_COLUMN_FROM_REVLOG:
                 s += "<td align=right>%s</td>" % cs.time(taken)
             s += "</tr>"
 
@@ -246,7 +266,6 @@ class StatsSidebar(object):
             else:
                 return
 
-
     def mini_card_stats(self,card,showOD):
         txt = "<p> <table width=100%>"
         txt += self.makeLineAdjusted("Ivl days is:",str(card.ivl))
@@ -255,7 +274,6 @@ class StatsSidebar(object):
         txt += self.makeLineAdjusted("Ease:",str(int(card.factor/10.0)))
         txt += self.makeLineAdjusted("Due day:",str(self.mydue(card)))
         cidstring = str(card.id) + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  time.strftime('%Y-%m-%d %H:%M', time.localtime(card.id/1000))
-        #datetime.datetime.strftime("%Y/%m/%d %H:%M")
         txt += self.makeLineAdjusted("cid/card created:", cidstring)
         txt += "</table></p>"
         return txt
@@ -335,7 +353,6 @@ class StatsSidebar(object):
 
                     txt += "<tr>" 
                     # option group names can be very long
-                    # I don't know css - first stackoverflow solutions didn't work ...
                     if len(optiongroup) > 15 and MULTILINE_LONG_OPTION_GROUP_NAMES:
                         txt += "<td align=left style='padding-right: 3px;'> %s </td>" % optiongroup_fmt
                     else:
@@ -365,38 +382,8 @@ class StatsSidebar(object):
                             easy_days = mw.col.sched._nextRevIvl(cc, 4)
                             
                             txt += "<hr>"
-                            txt += _("<h3>Scheduler Comparison</h3>")
+                            txt += _('<h3>Scheduler Comparison</h3>')
                             txt += "<p> <table width=100%>"
-                            # txt += """
-                            # <tr> 
-                            #     <td align=left style='padding-right: 3px;'>&nbsp;</td>
-                            #     <td align=left style='padding-right: 3px;'><b>hard_days</b></td>
-                            #     <td align=left style='padding-right: 3px;'><b>hard_fmt</b></td>
-                            #     <td align=left style='padding-right: 3px;'><b>good_days</b></td>
-                            #     <td align=left style='padding-right: 3px;'><b>good_fmt</b></td>
-                            #     <td align=left style='padding-right: 3px;'><b>easy_days</b></td>
-                            #     <td align=left style='padding-right: 3px;'><b>easy_fmt</b></td>
-                            # </tr>"""
-
-                            # txt += "<tr>" 
-                            # txt += "<td align=left style='padding-right: 3px;'> <b>orig:</b> </td>" 
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % orig_hard_days
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % fmtTimeSpan(orig_hard_days*86400, short=True)
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % orig_good_days
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % fmtTimeSpan(orig_good_days*86400, short=True)
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % orig_easy_days
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % fmtTimeSpan(orig_easy_days*86400, short=True)
-                            # txt += "</tr>"
-
-                            # txt += "<tr>" 
-                            # txt += "<td align=left style='padding-right: 3px;'> <b>mod: </b></td>" 
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % hard_days
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % fmtTimeSpan(hard_days*86400, short=True)
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % good_days
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % fmtTimeSpan(good_days*86400, short=True)
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % easy_days
-                            # txt += "<td align=left style='padding-right: 3px;'> %s </td>" % fmtTimeSpan(easy_days*86400, short=True)
-                            # txt += "</tr>"
 
                             txt += "<tr>" 
                             txt += "<td align=left style='padding-right: 3px;'> <b></b> </td>" 
@@ -422,8 +409,6 @@ class StatsSidebar(object):
                             txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(easy_days*86400, short=True))
                             txt += "</tr>"
 
-
-
                             txt += "</table></p>"
 
             txt += "<hr>"
@@ -434,7 +419,7 @@ class StatsSidebar(object):
             else:
                 txt += self.mini_card_stats(cc, True)
             txt += "<p>"
-            txt += self._revlogData(cc, cs, 3)
+            txt += self._revlogData(cc, cs, NUM_OF_REVS)
         lc = r.lastCard()
         if lc:
             txt += "<hr>"
@@ -444,7 +429,7 @@ class StatsSidebar(object):
             else:
                 txt += self.mini_card_stats(lc, False)
             txt += "<p>"
-            txt += self._revlogData(lc, cs, 3)
+            txt += self._revlogData(lc, cs, NUM_OF_REVS)
         if not txt:
             txt = _("No current card or last card.")
         style = self._style()
@@ -455,9 +440,7 @@ class StatsSidebar(object):
                 
     def _style(self):
         from anki import version
-        mystyle = """body {
-    background-color: %s; 
-}""" % BG_COLOR
+        mystyle = CSSSTYLING
         if version.startswith("2.0."):
             return mystyle 
         return mystyle + " td { font-size: 80%; }"
