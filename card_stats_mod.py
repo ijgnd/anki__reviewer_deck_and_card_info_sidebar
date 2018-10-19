@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 
 """
-minimal modification of glutanimates Extended Card stats during review.
+This is a small modification of glutanimates Extended Card stats during review.
 I made this add-on to check some modifications I made to Anki's scheduler.
 This modification adds some info I find interesting and hides other content.
-These are just quick changes using copy&paste and multicursor. The code is 
-now in an ugly and more or less non-maintainable state ...
-If you don't have a good reason to use this add-on don't. Use glutanimates
-original version.
+This modification offers some configuration options.
+
+You can also modify the source of the add-on by changing the method
+`_update_contents_of_sidebar`. Inside this function you can get 
+card or deck properties from a namedtuple cdp (for details
+see the function  current_card_deck_properties_as_namedtuple(self,card)
+
+This add-on is not well-tested. Errors are likely. If you don't know
+how to fix those you shouldn't use this add-on. Instead use glutanimate's
+well working and extensivly tested original version.
 
 This add-on incorporates some functions from Anki and the Advanced Browser.
 
@@ -38,13 +44,14 @@ SHOW_LONG_DECK_OPTIONS = False
 SHOW_BRIEF_DECK_OPTONS = True
 TRY_TO_SHOW_ORIGvMOD_SCHEDULER = True
 SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD = False
-MULTILINE_LONG_OPTION_GROUP_NAMES = True
 HIDE_TIME_COLUMN_FROM_REVLOG = True
 NUM_OF_REVS = 3 # how many prior reviews should be shown in table for current and prior card
+SHOW_DECK_NAMES = True
 HIGHLIGHT_COLORS = True 
 LOW_CRITICAL_COLOR = "Red"
 HIGH_CRITICAL_COLOR = "Blue"
-
+DECK_NAMES_LENGTH = 40  # if a string is longer it's split up over multiple lines
+OPTIONGROUP_NAMES_LENGTH = 20
 # example
 # IVL_MOD_COLOR_THRESHOLDS = (70,130) 
 # anything below 70 would be in LOW_CRITICAL_COLOR, anything over HIGH_CRITICAL_COLOR would be in 
@@ -72,25 +79,26 @@ h1,h2,h3,h4{
 """
 ##############  USER CONFIGURATION END  ##############
 
-
+import time
+import datetime
+from collections import namedtuple
 
 from anki.hooks import addHook
 from aqt import mw
 from aqt.qt import *
 from aqt.webview import AnkiWebView
 import aqt.stats
-import time
-import datetime
 from anki.lang import _
 from anki.utils import fmtTimeSpan
 from anki.stats import CardStats
+from aqt.utils import showInfo
 
 
 class StatsSidebar(object):
     def __init__(self, mw):
         self.mw = mw
         self.shown = False
-        addHook("showQuestion", self._update)
+        addHook("showQuestion", self._update_contents_of_sidebar)
         addHook("deckClosing", self.hide)
         addHook("reviewCleanup", self.hide)
 
@@ -122,7 +130,7 @@ class StatsSidebar(object):
             self.shown = self._addDockable(_("Card Info"), self.web)
             self.shown.closed.connect(self._onClosed)
 
-        self._update()
+        self._update_contents_of_sidebar()
 
     def hide(self):
         if self.shown:
@@ -140,8 +148,7 @@ class StatsSidebar(object):
         # schedule removal for after evt has finished
         self.mw.progress.timer(100, self.hide, False)
 
-    #copy and paste from Browser
-    #Added IntDate column
+    #copied from Browser, added IntDate column
     def _revlogData(self, card, cs,limit):
         entries = self.mw.col.db.all(
             "select id/1000.0, ease, ivl, factor, time/1000.0, type "
@@ -204,34 +211,8 @@ class StatsSidebar(object):
             s += _("""""")
         return s
 
-    def makeLineAdjusted(self, k, v,):    #from stats.py
-        txt = "<tr><td align=left width='35%'' style='padding-right: 3px;'>"
-        txt += "<b>%s</b></td><td>%s</td></tr>" % (k, v)
-        return txt
 
-    def makeLineAdjustedAndBreakLong(self, k, v,):    #from stats.py
-        txt = "<tr><td align=left width='35%'' style='padding-right: 3px;'>"
-        txt += "<b>%s</b></td><td>%s</td></tr>" % (k, v)
-        return txt
-
-    def critical_color(self,valueInt, colorconfig):
-            if valueInt <= colorconfig[0]:
-                return LOW_CRITICAL_COLOR
-            elif valueInt >=  colorconfig[1]:
-                return HIGH_CRITICAL_COLOR
-            else:
-                return ""
-
-    def makeLineAdjusted_with_coloring(self, key, valueInt, colorconfig):    #from stats.py
-        if not HIGHLIGHT_COLORS:
-            txt = self.makeLineAdjusted(key,str(valueInt))
-        else:
-            color=self.critical_color(valueInt, colorconfig)
-            txt = "<tr><td align=left width='35%'' style='padding-right: 3px;'>"
-            txt += '<b>{}</b></td><td><div style="color: {};">{} %</div></td></tr>'.format(key, color, str(valueInt))
-        return txt
-
-    def mydue(self,card):
+    def due_day(self,card):
         if card.queue < 0:
             mydue = None
         else:
@@ -247,6 +228,7 @@ class StatsSidebar(object):
                 else:
                     mydue = card.due
             return time.strftime("%Y-%m-%d", time.localtime(mydue))
+
 
     #from Advanced Browser - overdue_days     
     def valueForOverdue(self, card):
@@ -266,168 +248,247 @@ class StatsSidebar(object):
             else:
                 return
 
-    def mini_card_stats(self,card,showOD):
+    def fmt_long_string(self, name, value):
+        l = 0
+        u = value
+        out = ""
+        while l < len(name):
+            out += name[l:l+u] + '\n'
+            l += u
+        return out.rstrip('\n') 
+
+    def fmt_int_as_str__maybe_in_critical_color(self,valueInt, threshold):
+        if HIGHLIGHT_COLORS and valueInt <= threshold[0]:
+            return "<div style='color: {};'>{} %</div>".format(LOW_CRITICAL_COLOR, valueInt)
+        elif HIGHLIGHT_COLORS and valueInt >=  threshold[1]:
+            return "<div style='color: {};'>{} %</div>".format(HIGH_CRITICAL_COLOR,valueInt)
+        else:
+            return str(valueInt)
+
+    def make_Line_Adjusted(self, k, v,):    #from stats.py
+        txt = "<tr><td align=left width='35%' style='padding-right: 3px;'>"
+        txt += "<b>%s</b></td><td>%s</td></tr>" % (k, v)
+        return txt
+
+    def make_TD_Adjusted(self, a):    #from stats.py
+        txt = "<td align=left style='padding-right: 3px;'> %s </td>" %a
+        print(txt)
+        return txt
+    
+    def make_multicolumn_line_for_table(self, cl):   
+        """takes a list of strings and returns formatted"""
+        txt = "<tr>" 
+        for i in cl:
+            txt += self.make_TD_Adjusted(i)
+        txt += "</tr>"
+        return txt
+
+    def deck_name_and_source_for_filtered(self,card,cdp):
         txt = "<p> <table width=100%>"
-        txt += self.makeLineAdjusted("Ivl days is:",str(card.ivl))
-        if showOD:
-            txt += self.makeLineAdjusted("Overdue days: ",str(self.valueForOverdue(card)))
-        txt += self.makeLineAdjusted("Ease:",str(int(card.factor/10.0)))
-        txt += self.makeLineAdjusted("Due day:",str(self.mydue(card)))
-        cidstring = str(card.id) + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  time.strftime('%Y-%m-%d %H:%M', time.localtime(card.id/1000))
-        txt += self.makeLineAdjusted("cid/card created:", cidstring)
+        # deck names can be very long
+        if len(cdp.deckname) > DECK_NAMES_LENGTH:
+            txt += self.make_Line_Adjusted("Deck:",cdp.deckname_fmt)
+        else:
+            txt += self.make_Line_Adjusted("Deck:",cdp.deckname)
+        if card.odid:
+            if len(cdp.source_deck_name) > DECK_NAMES_LENGTH:
+                txt += self.make_Line_Adjusted("Source Deck", cdp.source_deck_name_fmt)
+            else:   
+                txt += self.make_Line_Adjusted("Source Deck", cdp.source_deck_name)
         txt += "</table></p>"
         return txt
 
-    def _update(self):
+    def mini_card_stats(self,card,cdp,showOD):
+        txt = "<p> <table width=100%>"
+        txt += self.make_Line_Adjusted("Ivl days is:",cdp.card_ivl_str)
+        if showOD:
+            txt += self.make_Line_Adjusted("Overdue days: ",cdp.value_for_overdue)
+        txt += self.make_Line_Adjusted("Ease:",cdp.easefct)
+        txt += self.make_Line_Adjusted("Due day:",cdp.dueday)
+        txt += self.make_Line_Adjusted("cid/card created:", cdp.cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  cdp.now)
+        txt += "</table></p>"
+        return txt
+
+    def text_for_scheduler_comparison(self, card, cdp):
+        txt= ""
+        try: 
+            orig_hard_days = mw.col.sched.original_nextRevIvl(card, 2)
+        except:
+            return txt
+        else:
+            if orig_hard_days:
+                orig_good_days = mw.col.sched.original_nextRevIvl(card, 3)
+                orig_easy_days = mw.col.sched.original_nextRevIvl(card, 4)
+
+                hard_days = mw.col.sched._nextRevIvl(card, 2)
+                good_days = mw.col.sched._nextRevIvl(card, 3)
+                easy_days = mw.col.sched._nextRevIvl(card, 4)
+                
+                txt += "<p> <table width=100%>"
+
+                contents_line1 = ["",     "days(h-g-e)","hard(fmt)","good(fmt)","easy(fmt)"]
+                contents_line2 = ["<b>orig:</b>", "{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),
+                      fmtTimeSpan(orig_hard_days*86400, short=True), fmtTimeSpan(orig_good_days*86400, short=True),
+                      fmtTimeSpan(orig_easy_days*86400, short=True)]
+                contents_line3 = ["<b>mod:</b>", "{} {} {}".format(hard_days,good_days,easy_days),
+                      fmtTimeSpan(hard_days*86400, short=True),fmtTimeSpan(good_days*86400, short=True),
+                      fmtTimeSpan(easy_days*86400, short=True)]
+                
+                txt += self.make_multicolumn_line_for_table(contents_line1)
+                txt += self.make_multicolumn_line_for_table(contents_line2)
+                txt += self.make_multicolumn_line_for_table(contents_line3)
+                txt += "</table></p>"
+                return txt
+
+
+    def text_for_short_options(self,card,cdp): 
+        txt = ""
+        txt += "<p> <table width=100%>"
+        contents_line1 = ["OptGr","Step","GrIv","EaIv","EaBo","IvMo","LpIv"]
+        contents_line1_bolded = ["<b>" + i + "</b>" for i in contents_line1]
+        txt += self.make_multicolumn_line_for_table(contents_line1_bolded)
+
+        txt += "<tr>" 
+        # option group names can be very long
+        if len(cdp.optiongroup) > 15 and DECK_NAMES_LENGTH:
+            groupname = cdp.optiongroup_fmt
+        else:
+            groupname = cdp.optiongroup
+
+        im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS),
+        lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS),
+            
+        contents_line2 = [groupname,cdp.steps_new_str[1:-1],cdp.GraduatingIvl,cdp.EasyIvl,cdp.easybonus,im_colored,lapse_colored]
+        txt += self.make_multicolumn_line_for_table(contents_line2)
+
+        txt += "</tr>"
+        txt += "</table></p>"
+        return txt
+
+
+    def text_for_long_options(self,card,cdp): 
+        txt = ""
+        txt += "<p> <table width=100%>"
+        txt += self.make_Line_Adjusted("Opt Group", cdp.optiongroup)                    
+        txt += self.make_Line_Adjusted("Learning Steps", cdp.steps_new_fmt[4:])
+        txt += self.make_Line_Adjusted("",'   ' +  cdp.steps_new_str)
+        txt += self.make_Line_Adjusted("Graduating Ivl", cdp.GraduatingIvl + ' days')
+        txt += self.make_Line_Adjusted("Easy Ivl", cdp.EasyIvl + ' days')
+        txt += self.make_Line_Adjusted("Easy Bonus", cdp.easybonus + '%')
+        txt += self.make_Line_Adjusted("Ivl Mod", self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS))
+        txt += self.make_Line_Adjusted("Lapse NewIvl", self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int, LAPSE_MOD_COLOR_THRESHOLDS))
+        txt += "</table></p>" 
+        return txt
+
+
+    def current_card_deck_properties_as_namedtuple(self,card):
+        cdp = namedtuple('CardProps', """
+                conf
+                cid
+                steps_new_int
+                steps_new_str
+                steps_new_fmt
+                GraduatingIvl
+                EasyIvl
+                im_int
+                im_str
+                easybonus
+                lapse_ivl_int
+                lapse_ivl_str
+                easefct
+                optiongroup
+                optiongroup_fmt
+                deckname
+                deckname_fmt
+                source_deck_name
+                source_deck_name_fmt
+                card_ivl_str
+                dueday
+                value_for_overdue
+                now
+                """)
+
+        if card.odid:
+            conf=self.mw.col.decks.confForDid(card.odid)
+            source_deck_name = aqt.mw.col.decks.get(card.odid)['name']
+        else:
+            conf=self.mw.col.decks.confForDid(card.did)
+            source_deck_name=""
+
+        formatted_steps = ''
+        for i in conf['new']['delays']:
+            formatted_steps += ' -- ' + fmtTimeSpan(i * 60, short=True)
+        
+        out = cdp(
+                conf=conf,
+                cid=str(card.id),
+                steps_new_int=conf['new']['delays'],
+                steps_new_str=str(conf['new']['delays']),
+                steps_new_fmt=formatted_steps, # self.fmt_long_string(str(conf['new']['delays']),OPTIONGROUP_NAMES_LENGTH),
+                GraduatingIvl=str(conf['new']['ints'][0]),
+                EasyIvl=str(conf['new']['ints'][1]),
+                im_int=int(100 * conf['rev']['ivlFct']),
+                im_str=str(int(100 * conf['rev']['ivlFct'])),
+                easybonus=str(int(100 * conf['rev']['ease4'])),
+                lapse_ivl_int=int(100 * conf['lapse']['mult']),
+                lapse_ivl_str=str(int(100 * conf['lapse']['mult'])),
+                easefct=str(int(card.factor/10.0)),
+                optiongroup=conf['name'],
+                optiongroup_fmt=self.fmt_long_string(conf['name'],OPTIONGROUP_NAMES_LENGTH),
+                deckname=aqt.mw.col.decks.get(card.did)['name'],
+                deckname_fmt=self.fmt_long_string(aqt.mw.col.decks.get(card.did)['name'],DECK_NAMES_LENGTH),
+                source_deck_name=source_deck_name,
+                source_deck_name_fmt=self.fmt_long_string(source_deck_name,DECK_NAMES_LENGTH),
+                card_ivl_str=str(card.ivl),
+                dueday=str(self.due_day(card)),
+                value_for_overdue=str(self.valueForOverdue(card)),
+                now=time.strftime('%Y-%m-%d %H:%M', time.localtime(card.id/1000))
+        )
+        return out
+
+
+    def _update_contents_of_sidebar(self):
         if not self.shown:
             return
         txt = ""
-        r = self.mw.reviewer
-        d = self.mw.col
-        cs = CardStats(d, r.card)
-        cc = r.card
-        if cc:
+        cs = CardStats(self.mw.col, self.mw.reviewer.card)
+        card = self.mw.reviewer.card
+        if card:
+            cdp = self.current_card_deck_properties_as_namedtuple(card)   #card-decks-properties
 
-
-            #ugly hack: I don't know why this sometimes fails
-            myerror = 0
-            if cc.odid:
-                try:
-                    conf=d.decks.confForDid(cc.odid)
-                except:
-                    myerror = 1
-            else:
-                try:
-                    conf=d.decks.confForDid(cc.did)
-                except:
-                    myerror = 1
-
-            if myerror != 1:     
-
-                newsteps=conf['new']['delays']
-                formatted_steps = ''
-                for i in newsteps:
-                    formatted_steps += ' -- ' + fmtTimeSpan(i * 60, short=True)
-                GraduatingIvl=conf['new']['ints'][0]
-                EasyIvl=conf['new']['ints'][1]
-                im=conf['rev']['ivlFct']
-                easybonus=conf['rev']['ease4']
-                lnivl=conf['lapse']['mult']
-                optiongroup=conf['name']
-
-                if SHOW_LONG_DECK_OPTIONS:
-                    txt += _("<h3>Deck Options</h3>")
-                    txt += "<p> <table width=100%>"
-                    txt += self.makeLineAdjusted("Opt Group", optiongroup)                    
-                    txt += self.makeLineAdjusted("Learning Steps", formatted_steps[4:])
-                    txt += self.makeLineAdjusted("",'   ' + str(newsteps))
-                    txt += self.makeLineAdjusted("Graduating Ivl", str(GraduatingIvl) + ' days')
-                    txt += self.makeLineAdjusted("Easy Ivl", str(EasyIvl) + ' days')
-                    txt += self.makeLineAdjusted("Easy Bonus", str(int(100 * easybonus)) + '%')
-                    txt += self.makeLineAdjusted_with_coloring( "Ivl Mod",      int(100 * im)    , IVL_MOD_COLOR_THRESHOLDS)
-                    txt += self.makeLineAdjusted_with_coloring( "Lapse NewIvl", int(100 * lnivl) , LAPSE_MOD_COLOR_THRESHOLDS)
-                    txt += "</table></p>" 
-
-
-                ogv = 0
-                ogr = 15
-                optiongroup_fmt = ""
-                while ogv < len(optiongroup):
-                    optiongroup_fmt += optiongroup[ogv:ogv+ogr] + '\n'
-                    ogv = ogv+ogr
-                optiongroup_fmt = optiongroup_fmt.rstrip('\n') 
-
-                if SHOW_BRIEF_DECK_OPTONS: 
-                    txt += _("<h3>Deck Options</h3>")
-                    txt += "<p> <table width=100%>"
-                    txt += """
-                    <tr> 
-                        <td align=left style='padding-right: 3px;'><b>OptGr</b></td>
-                        <td align=left style='padding-right: 3px;'><b>Step</b></td>
-                        <td align=left style='padding-right: 3px;'><b>GrIv</b></td>
-                        <td align=left style='padding-right: 3px;'><b>EaIv</b></td>
-                        <td align=left style='padding-right: 3px;'><b>EaBo</b></td>
-                        <td align=left style='padding-right: 3px;'><b>IvMo</b></td>
-                        <td align=left style='padding-right: 3px;'><b>LpIv</b></td>
-                    </tr>"""
-
-                    txt += "<tr>" 
-                    # option group names can be very long
-                    if len(optiongroup) > 15 and MULTILINE_LONG_OPTION_GROUP_NAMES:
-                        txt += "<td align=left style='padding-right: 3px;'> %s </td>" % optiongroup_fmt
-                    else:
-                        txt += "<td align=left style='padding-right: 3px;'> %s </td>" % optiongroup
-                    txt += "<td align=left style='padding-right: 3px;'> %s </td>" % str(newsteps)[1:-1]
-                    txt += "<td align=left style='padding-right: 3px;'> %s </td>" % str(GraduatingIvl)
-                    txt += "<td align=left style='padding-right: 3px;'> %s </td>" % str(EasyIvl)
-                    txt += "<td align=left style='padding-right: 3px;'> %s </td>" % str(int(100 * easybonus))
-                    txt += '<td align=left style="padding-right: 3px;"> <div style="color: %s;"> %s </div></td>' % ( self.critical_color(int(100 * im),   IVL_MOD_COLOR_THRESHOLDS  ), str(int(100 * im)    ))
-                    txt += '<td align=left style="padding-right: 3px;"> <div style="color: %s;"> %s </div></td>' % ( self.critical_color(int(100 * lnivl),LAPSE_MOD_COLOR_THRESHOLDS), str(int(100 * lnivl) ))
-                    txt += "</tr>"
-                    txt += "</table></p>"
-
-
-                if TRY_TO_SHOW_ORIGvMOD_SCHEDULER:
-                    try: 
-                        orig_hard_days = mw.col.sched.original_nextRevIvl(cc, 2)
-                    except:
-                        pass
-                    else:
-                        if orig_hard_days:
-                            orig_good_days = mw.col.sched.original_nextRevIvl(cc, 3)
-                            orig_easy_days = mw.col.sched.original_nextRevIvl(cc, 4)
-
-                            hard_days = mw.col.sched._nextRevIvl(cc, 2)
-                            good_days = mw.col.sched._nextRevIvl(cc, 3)
-                            easy_days = mw.col.sched._nextRevIvl(cc, 4)
-                            
-                            txt += "<hr>"
-                            txt += _('<h3>Scheduler Comparison</h3>')
-                            txt += "<p> <table width=100%>"
-
-                            txt += "<tr>" 
-                            txt += "<td align=left style='padding-right: 3px;'> <b></b> </td>" 
-                            txt += "<td align=left style='padding-right: 3px;'> days(h-g-e) </td>"
-                            txt += "<td align=left style='padding-right: 3px;'> hard(fmt) </td>"
-                            txt += "<td align=left style='padding-right: 3px;'> good(fmt) </td>"
-                            txt += "<td align=left style='padding-right: 3px;'> easy(fmt) </td>"
-                            txt += "</tr>"
-
-                            txt += "<tr>" 
-                            txt += "<td align=left style='padding-right: 3px;'> <b>orig:</b> </td>" 
-                            txt += "<td align=left style='padding-right: 3px;'> %s - %s - %s </td>" % (orig_hard_days, orig_good_days, orig_easy_days)
-                            txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(orig_hard_days*86400, short=True))
-                            txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(orig_good_days*86400, short=True))
-                            txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(orig_easy_days*86400, short=True))
-                            txt += "</tr>"
-
-                            txt += "<tr>" 
-                            txt += "<td align=left style='padding-right: 3px;'> <b>mod:</b> </td>" 
-                            txt += "<td align=left style='padding-right: 3px;'> %s - %s - %s </td>" % (hard_days, good_days, easy_days)
-                            txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(hard_days*86400, short=True))
-                            txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(good_days*86400, short=True))
-                            txt += "<td align=left style='padding-right: 3px;'> %s </td>" % (fmtTimeSpan(easy_days*86400, short=True))
-                            txt += "</tr>"
-
-                            txt += "</table></p>"
-
-            txt += "<hr>"
             txt += _("<h3>Current Card</h3>")
 
+            if TRY_TO_SHOW_ORIGvMOD_SCHEDULER:
+                #txt += _('<h4>Scheduler Comparison</h4>')
+                txt += self.text_for_scheduler_comparison(card, cdp)
+                txt += "<hr>"
+
+            #txt += _("<h4>Deck Options</h4>")  
+            if SHOW_BRIEF_DECK_OPTONS: 
+                txt += self.text_for_short_options(card,cdp)
+                txt += "<hr>"
+
+            if SHOW_DECK_NAMES:
+                txt += self.deck_name_and_source_for_filtered(card,cdp)
+
+            if SHOW_LONG_DECK_OPTIONS:
+                txt += self.text_for_long_options(card,cdp)
+
             if SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD:
-                txt += d.cardStats(cc)
+                txt += self.mw.col.cardStats(card)
             else:
-                txt += self.mini_card_stats(cc, True)
+                txt += self.mini_card_stats(card, cdp, True)
             txt += "<p>"
-            txt += self._revlogData(cc, cs, NUM_OF_REVS)
-        lc = r.lastCard()
+            txt += self._revlogData(card, cs, NUM_OF_REVS)
+
+        lc = self.mw.reviewer.lastCard()
         if lc:
             txt += "<hr>"
             txt += _("<h3>Last Card</h3>")
             if SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD:
-                txt += d.cardStats(lc)
+                txt += self.mw.col.cardStats(lc)
             else:
-                txt += self.mini_card_stats(lc, False)
+                txt += self.mini_card_stats(lc, cdp, False)
             txt += "<p>"
             txt += self._revlogData(lc, cs, NUM_OF_REVS)
         if not txt:
