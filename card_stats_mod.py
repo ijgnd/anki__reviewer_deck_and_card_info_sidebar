@@ -6,7 +6,10 @@ I made this add-on to check some modifications I made to Anki's scheduler.
 This modification adds some info I find interesting and hides other content.
 This modification offers some configuration options.
 
-You can also modify the source of the add-on by changing the method
+You can also customize a tables shown or add your own: Check the function
+`make_two_column_table` and `make_multi_column_table`.
+
+The main function that determines what is shown in the sidebar is 
 `_update_contents_of_sidebar`. Inside this function you can get 
 card or deck properties from a namedtuple cdp (for details
 see the function  current_card_deck_properties_as_namedtuple(self,card)
@@ -18,6 +21,7 @@ well working and extensivly tested original version.
 This add-on incorporates some functions from Anki and the Advanced Browser.
 
 glutanimates version has the following comment on top:
+
 
     minimal modification of
 
@@ -81,7 +85,7 @@ h1,h2,h3,h4{
 
 import time
 import datetime
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 from anki.hooks import addHook
 from aqt import mw
@@ -259,15 +263,24 @@ class StatsSidebar(object):
 
     def fmt_int_as_str__maybe_in_critical_color(self,valueInt, threshold):
         if HIGHLIGHT_COLORS and valueInt <= threshold[0]:
-            return "<div style='color: {};'>{} %</div>".format(LOW_CRITICAL_COLOR, valueInt)
+            return "<div style='color: {};'>{} </div>".format(LOW_CRITICAL_COLOR, valueInt)
         elif HIGHLIGHT_COLORS and valueInt >=  threshold[1]:
-            return "<div style='color: {};'>{} %</div>".format(HIGH_CRITICAL_COLOR,valueInt)
+            return "<div style='color: {};'>{} </div>".format(HIGH_CRITICAL_COLOR,valueInt)
         else:
             return str(valueInt)
 
     def make_Line_Adjusted(self, k, v,):    #from stats.py
         txt = "<tr><td align=left width='35%' style='padding-right: 3px;'>"
         txt += "<b>%s</b></td><td>%s</td></tr>" % (k, v)
+        return txt
+
+    def make_two_column_table(self, d):
+        o = OrderedDict(d)
+        txt = ""
+        txt += "<p> <table width=100%>"  
+        for k, v in o.items():
+            txt += self.make_Line_Adjusted(k, v)
+        txt += "</table></p>" 
         return txt
 
     def make_TD_Adjusted(self, a):    #from stats.py
@@ -283,31 +296,50 @@ class StatsSidebar(object):
         txt += "</tr>"
         return txt
 
-    def deck_name_and_source_for_filtered(self,card,cdp):
+    def make_multi_column_table(self, *rows):
         txt = "<p> <table width=100%>"
-        # deck names can be very long
-        if len(cdp.deckname) > DECK_NAMES_LENGTH:
-            txt += self.make_Line_Adjusted("Deck:",cdp.deckname_fmt)
-        else:
-            txt += self.make_Line_Adjusted("Deck:",cdp.deckname)
-        if card.odid:
-            if len(cdp.source_deck_name) > DECK_NAMES_LENGTH:
-                txt += self.make_Line_Adjusted("Source Deck", cdp.source_deck_name_fmt)
-            else:   
-                txt += self.make_Line_Adjusted("Source Deck", cdp.source_deck_name)
+        for r in rows:
+            txt += self.make_multicolumn_line_for_table(r)
         txt += "</table></p>"
         return txt
 
+    def deck_name_and_source_for_filtered(self,card,cdp):
+        rows = []
+        if len(cdp.deckname) > DECK_NAMES_LENGTH:
+            rows.append(("Deck:",cdp.deckname_fmt))
+        else:
+            rows.append(("Deck:",cdp.deckname))
+        if card.odid:
+            if len(cdp.source_deck_name) > DECK_NAMES_LENGTH:
+                rows.append(("Source Deck", cdp.source_deck_name_fmt))
+            else:   
+                rows.append(("Source Deck", cdp.source_deck_name))
+        return self.make_two_column_table(rows)
+
+    def text_for_long_options(self,card,cdp): 
+        rows_long_deck_options = [
+            ('', ),
+            ("Opt Group", cdp.optiongroup),             
+            ("Learning Steps", cdp.steps_new_fmt[4:]),
+            ("",'   ' +  cdp.steps_new_str),
+            ("Graduating Ivl", cdp.GraduatingIvl + ' days'),
+            ("Easy Ivl", cdp.EasyIvl + ' days'),
+            ("Easy Bonus", cdp.easybonus + '%'),
+            ("Ivl Mod", self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS)),
+            ("Lapse NewIvl", self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int, LAPSE_MOD_COLOR_THRESHOLDS)),
+            ]
+        return self.make_two_column_table(rows_long_deck_options)
+
     def mini_card_stats(self,card,cdp,showOD):
-        txt = "<p> <table width=100%>"
-        txt += self.make_Line_Adjusted("Ivl days is:",cdp.card_ivl_str)
+        rows_mini_stats = [
+            ("Ivl days is:",cdp.card_ivl_str),
+            ("Ease:",cdp.easefct),
+            ("Due day:",cdp.dueday),
+            ("cid/card created:", cdp.cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  cdp.now),
+        ]
         if showOD:
-            txt += self.make_Line_Adjusted("Overdue days: ",cdp.value_for_overdue)
-        txt += self.make_Line_Adjusted("Ease:",cdp.easefct)
-        txt += self.make_Line_Adjusted("Due day:",cdp.dueday)
-        txt += self.make_Line_Adjusted("cid/card created:", cdp.cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  cdp.now)
-        txt += "</table></p>"
-        return txt
+            rows_mini_stats.insert(1,("Overdue days: ",cdp.value_for_overdue))
+        return self.make_two_column_table(rows_mini_stats)
 
     def text_for_scheduler_comparison(self, card, cdp):
         txt= ""
@@ -323,78 +355,58 @@ class StatsSidebar(object):
                 hard_days = mw.col.sched._nextRevIvl(card, 2)
                 good_days = mw.col.sched._nextRevIvl(card, 3)
                 easy_days = mw.col.sched._nextRevIvl(card, 4)
-                
-                txt += "<p> <table width=100%>"
 
-                contents_line1 = ["",     "days(h-g-e)","hard(fmt)","good(fmt)","easy(fmt)"]
-                contents_line2 = ["<b>orig:</b>", "{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),
+                row1 = ["",     "days(h-g-e)","hard(fmt)","good(fmt)","easy(fmt)"]
+                row2 = ["<b>orig:</b>", "{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),
                       fmtTimeSpan(orig_hard_days*86400, short=True), fmtTimeSpan(orig_good_days*86400, short=True),
                       fmtTimeSpan(orig_easy_days*86400, short=True)]
-                contents_line3 = ["<b>mod:</b>", "{} {} {}".format(hard_days,good_days,easy_days),
+                row3 = ["<b>mod:</b>", "{} {} {}".format(hard_days,good_days,easy_days),
                       fmtTimeSpan(hard_days*86400, short=True),fmtTimeSpan(good_days*86400, short=True),
                       fmtTimeSpan(easy_days*86400, short=True)]
-                
-                txt += self.make_multicolumn_line_for_table(contents_line1)
-                txt += self.make_multicolumn_line_for_table(contents_line2)
-                txt += self.make_multicolumn_line_for_table(contents_line3)
-                txt += "</table></p>"
-                return txt
 
+                return self.make_multi_column_table(row1,row2,row3)
 
     def text_for_short_options(self,card,cdp): 
-        txt = ""
-        txt += "<p> <table width=100%>"
-        contents_line1 = ["OptGr","Step","GrIv","EaIv","EaBo","IvMo","LpIv"]
-        contents_line1_bolded = ["<b>" + i + "</b>" for i in contents_line1]
-        txt += self.make_multicolumn_line_for_table(contents_line1_bolded)
-
-        txt += "<tr>" 
+        row1 = ["OptGr","Step","GrIv","EaIv","EaBo","IvMo","LpIv"]
+        row1_bold = ["<b>" + i + "</b>" for i in row1]
         # option group names can be very long
         if len(cdp.optiongroup) > 15 and DECK_NAMES_LENGTH:
             groupname = cdp.optiongroup_fmt
         else:
             groupname = cdp.optiongroup
-
         im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS),
         lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS),
-            
-        contents_line2 = [groupname,cdp.steps_new_str[1:-1],cdp.GraduatingIvl,cdp.EasyIvl,cdp.easybonus,im_colored,lapse_colored]
-        txt += self.make_multicolumn_line_for_table(contents_line2)
-
-        txt += "</tr>"
-        txt += "</table></p>"
-        return txt
-
-
-    def text_for_long_options(self,card,cdp): 
-        txt = ""
-        txt += "<p> <table width=100%>"
-        txt += self.make_Line_Adjusted("Opt Group", cdp.optiongroup)                    
-        txt += self.make_Line_Adjusted("Learning Steps", cdp.steps_new_fmt[4:])
-        txt += self.make_Line_Adjusted("",'   ' +  cdp.steps_new_str)
-        txt += self.make_Line_Adjusted("Graduating Ivl", cdp.GraduatingIvl + ' days')
-        txt += self.make_Line_Adjusted("Easy Ivl", cdp.EasyIvl + ' days')
-        txt += self.make_Line_Adjusted("Easy Bonus", cdp.easybonus + '%')
-        txt += self.make_Line_Adjusted("Ivl Mod", self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS))
-        txt += self.make_Line_Adjusted("Lapse NewIvl", self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int, LAPSE_MOD_COLOR_THRESHOLDS))
-        txt += "</table></p>" 
-        return txt
-
+        row2 = [groupname,cdp.steps_new_str[1:-1],cdp.GraduatingIvl,cdp.EasyIvl,cdp.easybonus,im_colored,lapse_colored]
+        return self.make_multi_column_table(row1_bold,row2)
 
     def current_card_deck_properties_as_namedtuple(self,card):
         cdp = namedtuple('CardProps', """
                 conf
                 cid
+                Reviews
+                Lapses
+                Type
                 steps_new_int
                 steps_new_str
                 steps_new_fmt
                 GraduatingIvl
                 EasyIvl
+                Starting_ease
+                new__order_of_new_cards
+                new__cards_per_day                
+                bury_related_new_cards
+                MaxiumReviewsPerDay
                 im_int
                 im_str
                 easybonus
+                MaximumInterval
+                bury_related_reviews_until_next_day
+                lapse_leech_threshold
+                lapse_leech_action
                 lapse_ivl_int
                 lapse_ivl_str
+                lapse_mint_int
+                lapse_learning_steps
                 easefct
                 optiongroup
                 optiongroup_fmt
@@ -422,16 +434,30 @@ class StatsSidebar(object):
         out = cdp(
                 conf=conf,
                 cid=str(card.id),
+                Reviews=card.reps,
+                Lapses=card.lapses,
+                Type=card.type,
                 steps_new_int=conf['new']['delays'],
                 steps_new_str=str(conf['new']['delays']),
                 steps_new_fmt=formatted_steps, # self.fmt_long_string(str(conf['new']['delays']),OPTIONGROUP_NAMES_LENGTH),
                 GraduatingIvl=str(conf['new']['ints'][0]),
                 EasyIvl=str(conf['new']['ints'][1]),
+                Starting_ease = conf['new']['initialFactor'] / 10 ,
+                new__order_of_new_cards=conf['new']['order'],
+                new__cards_per_day=conf['new']['perDay'],
+                bury_related_new_cards=conf['new']['bury'],
+                MaxiumReviewsPerDay=conf['rev']['perDay'],
                 im_int=int(100 * conf['rev']['ivlFct']),
                 im_str=str(int(100 * conf['rev']['ivlFct'])),
                 easybonus=str(int(100 * conf['rev']['ease4'])),
+                MaximumInterval=conf['rev']['maxIvl'],
+                bury_related_reviews_until_next_day = conf['rev']['bury'],
+                lapse_leech_threshold = conf['lapse']['leechFails'],
+                lapse_leech_action  = conf['lapse']['leechAction'],
                 lapse_ivl_int=int(100 * conf['lapse']['mult']),
                 lapse_ivl_str=str(int(100 * conf['lapse']['mult'])),
+                lapse_mint_int=conf['lapse']['minInt'],
+                lapse_learning_steps=conf['lapse']['delays'],
                 easefct=str(int(card.factor/10.0)),
                 optiongroup=conf['name'],
                 optiongroup_fmt=self.fmt_long_string(conf['name'],OPTIONGROUP_NAMES_LENGTH),
