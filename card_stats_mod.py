@@ -424,12 +424,12 @@ class StatsSidebar(object):
 
     def text_for_short_options(self,card,cdp): 
         row1 = [["OptGr","left"],
-                ["Step","left"],
-                ["GrIv","right"],
-                ["EaIv","right"],
-                ["EaBo","right"],
-                ["IvMo","right"],
-                ["LpIv","right"],]
+                ["Steps","center"],
+                ["GrIv","center"],
+                ["EaIv","center"],
+                ["EaBo","center"],
+                ["IvMo","center"],
+                ["LpIv","center"],]
         # option group names can be very long
         if len(cdp.optiongroup) > 15 and DECK_NAMES_LENGTH:
             groupname = cdp.optiongroup_fmt
@@ -438,12 +438,12 @@ class StatsSidebar(object):
         im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS)
         lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS)
         row2 = [[groupname,"left"],
-                [cdp.steps_new_str[1:-1],"left"],
-                [cdp.GraduatingIvl,"right"],
-                [cdp.EasyIvl,"right"],
-                [cdp.easybonus,"right"],
-                [im_colored,"right"],
-                [lapse_colored,"right"],]
+                [cdp.steps_new_str[1:-1],"center"],
+                [cdp.GraduatingIvl,"center"],
+                [cdp.EasyIvl,"center"],
+                [cdp.easybonus,"center"],
+                [im_colored,"center"],
+                [lapse_colored,"center"],]
         #self.show_info_length_of_sublists([row1,row2])
         return self.make_multi_column_table_first_row_bold([row1,row2])
 
@@ -583,7 +583,8 @@ class StatsSidebar(object):
             if SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD:
                 txt += self.mw.col.cardStats(lc)
             else:
-                txt += self.mini_card_stats(lc, cdp, False)
+                lcdp = self.current_card_deck_properties_as_namedtuple(lc) 
+                txt += self.mini_card_stats(lc, lcdp, False)
             txt += "<p>"
             txt += self._revlogData_mod(lc, cs, NUM_OF_REVS)
         if not txt:
