@@ -356,18 +356,32 @@ class StatsSidebar(object):
                 good_days = mw.col.sched._nextRevIvl(card, 3)
                 easy_days = mw.col.sched._nextRevIvl(card, 4)
 
-                row1 = ["",     "days(h-g-e)","hard(fmt)","good(fmt)","easy(fmt)"]
-                row2 = ["<b>orig:</b>", "{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),
-                      fmtTimeSpan(orig_hard_days*86400, short=True), fmtTimeSpan(orig_good_days*86400, short=True),
-                      fmtTimeSpan(orig_easy_days*86400, short=True)]
-                row3 = ["<b>mod:</b>", "{} {} {}".format(hard_days,good_days,easy_days),
-                      fmtTimeSpan(hard_days*86400, short=True),fmtTimeSpan(good_days*86400, short=True),
-                      fmtTimeSpan(easy_days*86400, short=True)]
+                row1 = ["",
+                        "days(h-g-e)",
+                        "hard(fmt)",
+                        "good(fmt)",
+                        "easy(fmt)"]
+                row2 = ["<b>orig:</b>", 
+                        "{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),
+                        fmtTimeSpan(orig_hard_days*86400, short=True), 
+                        fmtTimeSpan(orig_good_days*86400, short=True),
+                        fmtTimeSpan(orig_easy_days*86400, short=True)]
+                row3 = ["<b>mod:</b>", 
+                        "{} {} {}".format(hard_days,good_days,easy_days),
+                        fmtTimeSpan(hard_days*86400, short=True),
+                        fmtTimeSpan(good_days*86400, short=True),
+                        fmtTimeSpan(easy_days*86400, short=True)]
 
                 return self.make_multi_column_table(row1,row2,row3)
 
     def text_for_short_options(self,card,cdp): 
-        row1 = ["OptGr","Step","GrIv","EaIv","EaBo","IvMo","LpIv"]
+        row1 = ["OptGr",
+                "Step",
+                "GrIv",
+                "EaIv",
+                "EaBo",
+                "IvMo",
+                "LpIv"]
         row1_bold = ["<b>" + i + "</b>" for i in row1]
         # option group names can be very long
         if len(cdp.optiongroup) > 15 and DECK_NAMES_LENGTH:
@@ -376,7 +390,13 @@ class StatsSidebar(object):
             groupname = cdp.optiongroup
         im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS),
         lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS),
-        row2 = [groupname,cdp.steps_new_str[1:-1],cdp.GraduatingIvl,cdp.EasyIvl,cdp.easybonus,im_colored,lapse_colored]
+        row2 = [groupname,
+                cdp.steps_new_str[1:-1],
+                cdp.GraduatingIvl,
+                cdp.EasyIvl,
+                cdp.easybonus,
+                im_colored,
+                lapse_colored]
         return self.make_multi_column_table(row1_bold,row2)
 
     def current_card_deck_properties_as_namedtuple(self,card):
