@@ -3,7 +3,7 @@
 """
 This is a small modification of glutanimates Extended Card stats during review.
 I made this add-on to check some modifications I made to Anki's scheduler.
-This modification adds some info I find interesting and hides other content.
+This modification adds some info I (and a friend) find interesting and hides other content.
 This modification offers some configuration options.
 
 You can also customize a tables shown or add your own: Check the function
@@ -18,10 +18,14 @@ This add-on is not well-tested. Errors are likely. If you don't know
 how to fix those you shouldn't use this add-on. Instead use glutanimate's
 well working and extensivly tested original version.
 
-This add-on incorporates some functions from Anki and the Advanced Browser.
+This add-on incorporates some functions from 
+- Anki 
+- the add-on [Advanced Browser](https://ankiweb.net/shared/info/874215009)
+- the add-on [Warrior Mode - Stats & Debug](https://ankiweb.net/shared/info/4241959)
+
+
 
 glutanimates version has the following comment on top:
-
 
     minimal modification of
 
@@ -92,11 +96,12 @@ from aqt import mw
 from aqt.qt import *
 from aqt.webview import AnkiWebView
 import aqt.stats
+import anki.stats as st
 from anki.lang import _
 from anki.utils import fmtTimeSpan
 from anki.stats import CardStats
 from aqt.utils import showInfo
-
+            
 
 class StatsSidebar(object):
     def __init__(self, mw):
@@ -105,6 +110,7 @@ class StatsSidebar(object):
         addHook("showQuestion", self._update_contents_of_sidebar)
         addHook("deckClosing", self.hide)
         addHook("reviewCleanup", self.hide)
+
 
     def _addDockable(self, title, w):
         class DockableWithClose(QDockWidget):
@@ -122,8 +128,10 @@ class StatsSidebar(object):
         mw.addDockWidget(Qt.RightDockWidgetArea, dock)
         return dock
 
+
     def _remDockable(self, dock):
         mw.removeDockWidget(dock)
+
 
     def show(self):
         if not self.shown:
@@ -136,11 +144,13 @@ class StatsSidebar(object):
 
         self._update_contents_of_sidebar()
 
+
     def hide(self):
         if self.shown:
             self._remDockable(self.shown)
             self.shown = None
             #actionself.mw.form.actionCstats.setChecked(False)
+
 
     def toggle(self):
         if self.shown:
@@ -148,72 +158,10 @@ class StatsSidebar(object):
         else:
             self.show()
 
+
     def _onClosed(self):
         # schedule removal for after evt has finished
         self.mw.progress.timer(100, self.hide, False)
-
-    #copied from Browser, added IntDate column
-    def _revlogData(self, card, cs,limit):
-        entries = self.mw.col.db.all(
-            "select id/1000.0, ease, ivl, factor, time/1000.0, type "
-            "from revlog where cid = ?", card.id)
-        if not entries:
-            return ""
-        s = "<table width=100%%><tr><th align=left>%s</th>" % _("Date")
-        s += ("<th align=right>%s</th>" * 5) % (
-            _("Type"), _("Rat"), _("Ivl"), "IntDate", _("Ease"))
-        if not HIDE_TIME_COLUMN_FROM_REVLOG:
-            s += ("<th align=right>%s</th>") % (_("Time"))
-        cnt = 0
-        limitentries = list(reversed(entries))[:limit]
-        for (date, ease, ivl, factor, taken, type) in limitentries:
-            cnt += 1
-            s += "<tr><td>%s</td>" % time.strftime(_("<b>%Y-%m-%d</b> @ %H:%M"),
-                                                   time.localtime(date))
-            tstr = [_("Learn"), _("Review"), _("Relearn"), _("Filtered"),
-                    _("Resched")][type]
-            import anki.stats as st
-
-            fmt = "<span style='color:%s'>%s</span>"
-            if type == 0:
-                tstr = fmt % (st.colLearn, tstr)
-            elif type == 1:
-                tstr = fmt % (st.colMature, tstr)
-            elif type == 2:
-                tstr = fmt % (st.colRelearn, tstr)
-            elif type == 3:
-                tstr = fmt % ("#3c9690", tstr) # yellow  (st.colCram, tstr)
-            else:
-                tstr = fmt % ("#000", tstr)
-            if ease == 1:
-                ease = fmt % (st.colRelearn, ease)
-                ####################
-            int_due = "na"
-            if ivl > 0:
-                int_due_date = time.localtime(date + (ivl * 24 * 60 * 60))
-                int_due = time.strftime(_("%Y-%m-%d"), int_due_date)
-                ####################
-            if ivl == 0:
-                ivl = _("0d")
-            elif ivl > 0:
-                ivl = fmtTimeSpan(ivl * 86400, short=True)
-            else:
-                ivl = cs.time(-ivl)
-
-            s += ("<td align=right>%s</td>" * 5) % (
-                tstr,
-                ease, ivl,
-                int_due
-                ,
-                "%d%%" % (factor / 10) if factor else "")
-            if not HIDE_TIME_COLUMN_FROM_REVLOG:
-                s += "<td align=right>%s</td>" % cs.time(taken)
-            s += "</tr>"
-
-        s += "</table>"
-        if cnt < card.reps:
-            s += _("""""")
-        return s
 
 
     def due_day(self,card):
@@ -261,47 +209,52 @@ class StatsSidebar(object):
             l += u
         return out.rstrip('\n') 
 
+
     def fmt_int_as_str__maybe_in_critical_color(self,valueInt, threshold):
         if HIGHLIGHT_COLORS and valueInt <= threshold[0]:
-            return "<div style='color: {};'>{} </div>".format(LOW_CRITICAL_COLOR, valueInt)
+            return "<div style='color: {};'>{}</div>".format(LOW_CRITICAL_COLOR, str(valueInt))
         elif HIGHLIGHT_COLORS and valueInt >=  threshold[1]:
-            return "<div style='color: {};'>{} </div>".format(HIGH_CRITICAL_COLOR,valueInt)
+            return "<div style='color: {};'>{}</div>".format(HIGH_CRITICAL_COLOR, str(valueInt))
         else:
             return str(valueInt)
 
-    def make_Line_Adjusted(self, k, v,):    #from stats.py
-        txt = "<tr><td align=left width='35%' style='padding-right: 3px;'>"
-        txt += "<b>%s</b></td><td>%s</td></tr>" % (k, v)
-        return txt
 
     def make_two_column_table(self, d):
         o = OrderedDict(d)
         txt = ""
         txt += "<p> <table width=100%>"  
-        for k, v in o.items():
-            txt += self.make_Line_Adjusted(k, v)
+        for k, v in o.items():     #makeLine from stats.py adjusted
+            txt += "<tr><td align=left width='35%' style='padding-right: 3px;'>"
+            txt += "<b>%s</b></td><td>%s</td></tr>" % (k, v)
         txt += "</table></p>" 
         return txt
 
-    def make_TD_Adjusted(self, a):    #from stats.py
-        txt = "<td align=left style='padding-right: 3px;'> %s </td>" %a
-        print(txt)
-        return txt
-    
-    def make_multicolumn_line_for_table(self, cl):   
-        """takes a list of strings and returns formatted"""
-        txt = "<tr>" 
-        for i in cl:
-            txt += self.make_TD_Adjusted(i)
-        txt += "</tr>"
-        return txt
 
-    def make_multi_column_table(self, *rows):
+    def make_multi_column_table(self, rowlist):
+        """takes a list of lists. Each sublist must have four entries: Value - htmlcode before value - 
+        htmlcode after value - alignment """
         txt = "<p> <table width=100%>"
-        for r in rows:
-            txt += self.make_multicolumn_line_for_table(r)
+        for r in rowlist:
+            txt += "<tr>" 
+            for c in r: 
+                txt += "<td align='%s' style='padding-right: 3px;'> %s %s %s</td>" % (c[3], c[1], str(c[0]), c[2])
+            txt += "</tr>"
         txt += "</table></p>"
         return txt
+
+
+    def make_multi_column_table_first_row_bold(self, rowlist):
+        """takes a list of lists. Each sublist must have two entries: Value - alignment """
+        for i, r in enumerate(rowlist):
+            for c in r:
+                if i == 0:
+                    c.insert(1,"<b>")
+                    c.insert(2,"</b>")
+                else:
+                    c.insert(1,"") 
+                    c.insert(2,"")
+        return self.make_multi_column_table(rowlist)
+
 
     def deck_name_and_source_for_filtered(self,card,cdp):
         rows = []
@@ -315,6 +268,29 @@ class StatsSidebar(object):
             else:   
                 rows.append(("Source Deck", cdp.source_deck_name))
         return self.make_two_column_table(rows)
+
+
+    #from warrior-mode
+    def formatIvlString(self, cs, ivl):
+        if ivl == 0:
+            return _("0d")
+        elif ivl > 0:
+            return fmtTimeSpan(ivl * 86400, short=True)
+        else:
+            return cs.time(-ivl)
+
+
+    def show_info_length_of_sublists(self,lol):
+        mystr = ""
+        def sublist_length(s):
+            out = ""
+            for e in s:
+                out += str(len(e)) + ' '
+            return out
+        for l in lol:
+            mystr += sublist_length(l) + ' '       
+        showInfo(mystr)
+
 
     def text_for_long_options(self,card,cdp): 
         rows_long_deck_options = [
@@ -330,6 +306,7 @@ class StatsSidebar(object):
             ]
         return self.make_two_column_table(rows_long_deck_options)
 
+
     def mini_card_stats(self,card,cdp,showOD):
         rows_mini_stats = [
             ("Ivl days is:",cdp.card_ivl_str),
@@ -340,6 +317,75 @@ class StatsSidebar(object):
         if showOD:
             rows_mini_stats.insert(1,("Overdue days: ",cdp.value_for_overdue))
         return self.make_two_column_table(rows_mini_stats)
+
+
+    #copied from Browser, added IntDate column
+    #cleanup inspired by  warrior mode
+    def _revlogData_mod(self, card, cs,limit):
+        entries = self.mw.col.db.all(
+            "select id/1000.0, ease, ivl, factor, time/1000.0, type "
+            "from revlog where cid = ?", card.id)
+        if not entries:
+            return ""
+
+        list_of_rows = []
+        
+        row1 = [["Date","left"],
+                ["Type","right"],
+                ["Rat","right"],
+                ["Ivl","right"],
+                ["IntDate","right"],
+                ["Ease","right"],]
+        if not HIDE_TIME_COLUMN_FROM_REVLOG:
+            row1.append(["Time","right"])
+        list_of_rows.append(row1)
+
+        limitentries = list(reversed(entries))[:limit]
+        for (date, ease, ivl, factor, taken, type) in limitentries:
+            tstr = [_("Lrn"), _("Rev"), _("ReLn"), _("Filt"), _("Resch")][type]
+                #Learned, Review, Relearned, Filtered, Defered (Rescheduled)
+            
+            #COLORIZE LOG TYPE
+            fmt = "<span style='color:%s'>%s</span>"
+            if type == 0:
+                tstr = fmt % (st.colLearn, tstr)
+            elif type == 1:
+                tstr = fmt % (st.colMature, tstr)
+            elif type == 2:
+                tstr = fmt % (st.colRelearn, tstr)
+            elif type == 3:
+                tstr = fmt % ("orange", tstr) # "#3c9690", tstr) # yellow  (st.colCram, tstr)
+            else:
+                tstr = fmt % ("#000", tstr)
+
+            #COLORIZE EASE
+            if ease == 1:
+                ease = fmt % (st.colRelearn, ease)
+            elif ease == 3:
+                ease = fmt % ('navy', ease)
+            elif ease == 4:
+                ease = fmt % ('darkgreen', ease)
+
+            int_due = "na"
+            if ivl > 0:
+                int_due_date = time.localtime(date + (ivl * 24 * 60 * 60))
+                int_due = time.strftime(_("%Y-%m-%d"), int_due_date)
+
+            ivl = self.formatIvlString(cs, ivl)
+
+            row_n = [[time.strftime("<b>%Y-%m-%d</b>@%H:%M",time.localtime(date)),"left"],
+                     [tstr,"right"],
+                     [ease,"right"],
+                     [ivl,"right"],
+                     [int_due,"right"],
+                     [factor / 10 if factor else "","right"],]
+            if not HIDE_TIME_COLUMN_FROM_REVLOG:
+                row_n.append([cs.time(taken),"right"])
+            list_of_rows.append(list(row_n))  # copy list
+
+        #self.show_info_length_of_sublists(list_of_rows)
+        return  self.make_multi_column_table_first_row_bold(list_of_rows)
+
 
     def text_for_scheduler_comparison(self, card, cdp):
         txt= ""
@@ -356,48 +402,51 @@ class StatsSidebar(object):
                 good_days = mw.col.sched._nextRevIvl(card, 3)
                 easy_days = mw.col.sched._nextRevIvl(card, 4)
 
-                row1 = ["",
-                        "days(h-g-e)",
-                        "hard(fmt)",
-                        "good(fmt)",
-                        "easy(fmt)"]
-                row2 = ["<b>orig:</b>", 
-                        "{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),
-                        fmtTimeSpan(orig_hard_days*86400, short=True), 
-                        fmtTimeSpan(orig_good_days*86400, short=True),
-                        fmtTimeSpan(orig_easy_days*86400, short=True)]
-                row3 = ["<b>mod:</b>", 
-                        "{} {} {}".format(hard_days,good_days,easy_days),
-                        fmtTimeSpan(hard_days*86400, short=True),
-                        fmtTimeSpan(good_days*86400, short=True),
-                        fmtTimeSpan(easy_days*86400, short=True)]
+                row1 = [["","left"],
+                        ["days(h-g-e)","left"],
+                        ["hard(fmt)","center"],
+                        ["good(fmt)","center"],
+                        ["easy(fmt)","center"],]
+                row2 = [["<b>orig:</b>","left"],
+                        ["{} {} {}".format(orig_hard_days,orig_good_days,orig_easy_days),"left"],
+                        [fmtTimeSpan(orig_hard_days*86400, short=True),"center"],
+                        [fmtTimeSpan(orig_good_days*86400, short=True),"center"],
+                        [fmtTimeSpan(orig_easy_days*86400, short=True),"center"],]
+                row3 = [["<b>mod:</b>","left"],
+                        ["{} {} {}".format(hard_days,good_days,easy_days),"left"],
+                        [fmtTimeSpan(hard_days*86400, short=True),"center"],
+                        [fmtTimeSpan(good_days*86400, short=True),"center"],
+                        [fmtTimeSpan(easy_days*86400, short=True),"center"],]
 
-                return self.make_multi_column_table(row1,row2,row3)
+                #self.show_info_length_of_sublists([row1,row2,row3])
+                return self.make_multi_column_table_first_row_bold([row1,row2,row3])
+
 
     def text_for_short_options(self,card,cdp): 
-        row1 = ["OptGr",
-                "Step",
-                "GrIv",
-                "EaIv",
-                "EaBo",
-                "IvMo",
-                "LpIv"]
-        row1_bold = ["<b>" + i + "</b>" for i in row1]
+        row1 = [["OptGr","left"],
+                ["Step","left"],
+                ["GrIv","right"],
+                ["EaIv","right"],
+                ["EaBo","right"],
+                ["IvMo","right"],
+                ["LpIv","right"],]
         # option group names can be very long
         if len(cdp.optiongroup) > 15 and DECK_NAMES_LENGTH:
             groupname = cdp.optiongroup_fmt
         else:
             groupname = cdp.optiongroup
-        im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS),
-        lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS),
-        row2 = [groupname,
-                cdp.steps_new_str[1:-1],
-                cdp.GraduatingIvl,
-                cdp.EasyIvl,
-                cdp.easybonus,
-                im_colored,
-                lapse_colored]
-        return self.make_multi_column_table(row1_bold,row2)
+        im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS)
+        lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS)
+        row2 = [[groupname,"left"],
+                [cdp.steps_new_str[1:-1],"left"],
+                [cdp.GraduatingIvl,"right"],
+                [cdp.EasyIvl,"right"],
+                [cdp.easybonus,"right"],
+                [im_colored,"right"],
+                [lapse_colored,"right"],]
+        #self.show_info_length_of_sublists([row1,row2])
+        return self.make_multi_column_table_first_row_bold([row1,row2])
+
 
     def current_card_deck_properties_as_namedtuple(self,card):
         cdp = namedtuple('CardProps', """
@@ -525,7 +574,7 @@ class StatsSidebar(object):
             else:
                 txt += self.mini_card_stats(card, cdp, True)
             txt += "<p>"
-            txt += self._revlogData(card, cs, NUM_OF_REVS)
+            txt += self._revlogData_mod(card, cs, NUM_OF_REVS)
 
         lc = self.mw.reviewer.lastCard()
         if lc:
@@ -536,7 +585,7 @@ class StatsSidebar(object):
             else:
                 txt += self.mini_card_stats(lc, cdp, False)
             txt += "<p>"
-            txt += self._revlogData(lc, cs, NUM_OF_REVS)
+            txt += self._revlogData_mod(lc, cs, NUM_OF_REVS)
         if not txt:
             txt = _("No current card or last card.")
         style = self._style()
@@ -552,10 +601,11 @@ class StatsSidebar(object):
             return mystyle 
         return mystyle + " td { font-size: 80%; }"
 
-_cs = StatsSidebar(mw)
 
+_cs = StatsSidebar(mw)
 def cardStats(on):
     _cs.toggle()
+
 
 action = QAction(mw)
 action.setText("Card Stats")
