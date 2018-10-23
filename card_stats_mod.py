@@ -354,7 +354,7 @@ class StatsSidebar(object):
             elif type == 2:
                 tstr = fmt % (st.colRelearn, tstr)
             elif type == 3:
-                tstr = fmt % ("orange", tstr) # "#3c9690", tstr) # yellow  (st.colCram, tstr)
+                tstr = fmt % ("#3c9690", tstr) # yellow  (st.colCram, tstr)
             else:
                 tstr = fmt % ("#000", tstr)
 
