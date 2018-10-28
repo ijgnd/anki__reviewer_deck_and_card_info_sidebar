@@ -11,7 +11,7 @@ You can also customize a tables shown or add your own: Check the function
 
 The main function that determines what is shown in the sidebar is 
 `_update_contents_of_sidebar`. Inside this function you can get 
-card or deck properties from a namedtuple cdp (for details
+card or deck properties from a namedtuple p (for details
 see the function  current_card_deck_properties_as_namedtuple(self,card)
 
 This add-on is not well-tested. Errors are likely. If you don't know
@@ -48,10 +48,12 @@ glutanimates version has the following comment on top:
 
 ############## USER CONFIGURATION START ##############
 
+
 SHOW_LONG_DECK_OPTIONS = False
 SHOW_BRIEF_DECK_OPTONS = True
 TRY_TO_SHOW_ORIGvMOD_SCHEDULER = True
 SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD = False
+
 HIDE_TIME_COLUMN_FROM_REVLOG = True
 NUM_OF_REVS = 3 # how many prior reviews should be shown in table for current and prior card
 SHOW_DECK_NAMES = True
@@ -163,10 +165,25 @@ class StatsSidebar(object):
         # schedule removal for after evt has finished
         self.mw.progress.timer(100, self.hide, False)
 
+    # this code is used in anki.stats.report() that is called
+    # by the Extended Browser/Browser - info
+    # to calculate a due column
+    # if c.type in (1,2):
+    #     if c.odid or c.queue < 0:
+    #         next = None
+    #     else:
+    #         if c.queue in (2,3):
+    #             next = time.time()+((c.due - self.col.sched.today)*86400)
+    #         else:
+    #             next = c.due
+    #         next = self.date(next)
+    #     if next:
+    #         self.addLine(_("Due"), next)
+
 
     def due_day(self,card):
-        if card.queue < 0:
-            mydue = None
+        if card.queue <= 0:
+            return ""
         else:
             if card.queue in (2,3):
                 if card.odue:
@@ -182,23 +199,34 @@ class StatsSidebar(object):
             return time.strftime("%Y-%m-%d", time.localtime(mydue))
 
 
-    #from Advanced Browser - overdue_days     
+
     def valueForOverdue(self, card):
-        myvalue=0
-        if card.queue == 1:
-            return
-        elif card.queue == 0 or card.type == 0:
-            return
-        elif card.odue and (card.queue in (2,3) or (type == 2 and queue < 0)):
-            myvalue = card.odue 
-        elif card.queue in (2,3) or (card.type == 2 and card.queue < 0):
-            myvalue = card.due
-        if myvalue:
-            diff = myvalue - mw.col.sched.today
-            if diff < 0:
-                return diff * -1
-            else:
-                return
+        #warrior mode only uses: 
+        return mw.col.sched._daysLate(card)
+        
+        #shorter version of code rom below
+        # if card.queue == 2:
+        #     return mw.col.sched._daysLate(card)
+        # else:
+        #     return ""
+        
+        
+        ## Advanced Browser has overdue_days in  custom_fields.py : Advantage ??
+        # if card.queue == 0 or card.queue == 1 or card.type == 0:  
+        #     myvalue = 0
+        # elif card.odue and (card.queue in (2,3) or (type == 2 and card.queue < 0)):
+        #     myvalue = card.odue 
+        # elif card.queue in (2,3) or (card.type == 2 and card.queue < 0):
+        #     myvalue = card.due
+        # if myvalue:
+        #     diff = myvalue - mw.col.sched.today
+        #     if diff < 0:
+        #         return diff * -1
+        #     else:
+        #         return ""
+        # else:
+        #     return ""
+
 
     def fmt_long_string(self, name, value):
         l = 0
@@ -232,7 +260,7 @@ class StatsSidebar(object):
 
     def make_multi_column_table(self, rowlist):
         """takes a list of lists. Each sublist must have four entries: Value - htmlcode before value - 
-        htmlcode after value - alignment """
+        htmlcode after value - alignment. I think having the value first is more clear"""
         txt = "<p> <table width=100%>"
         for r in rowlist:
             txt += "<tr>" 
@@ -256,17 +284,17 @@ class StatsSidebar(object):
         return self.make_multi_column_table(rowlist)
 
 
-    def deck_name_and_source_for_filtered(self,card,cdp):
+    def deck_name_and_source_for_filtered(self,card,p):
         rows = []
-        if len(cdp.deckname) > DECK_NAMES_LENGTH:
-            rows.append(("Deck:",cdp.deckname_fmt))
+        if len(p.deckname) > DECK_NAMES_LENGTH:
+            rows.append(("Deck:",p.deckname_fmt))
         else:
-            rows.append(("Deck:",cdp.deckname))
+            rows.append(("Deck:",p.deckname))
         if card.odid:
-            if len(cdp.source_deck_name) > DECK_NAMES_LENGTH:
-                rows.append(("Source Deck", cdp.source_deck_name_fmt))
+            if len(p.source_deck_name) > DECK_NAMES_LENGTH:
+                rows.append(("Source Deck", p.source_deck_name_fmt))
             else:   
-                rows.append(("Source Deck", cdp.source_deck_name))
+                rows.append(("Source Deck", p.source_deck_name))
         return self.make_two_column_table(rows)
 
 
@@ -280,6 +308,7 @@ class StatsSidebar(object):
             return cs.time(-ivl)
 
 
+    #for debugging
     def show_info_length_of_sublists(self,lol):
         mystr = ""
         def sublist_length(s):
@@ -292,30 +321,69 @@ class StatsSidebar(object):
         showInfo(mystr)
 
 
-    def text_for_long_options(self,card,cdp): 
+    def long_deck_options(self,card,p): 
         rows_long_deck_options = [
-            ('', ),
-            ("Opt Group", cdp.optiongroup),             
-            ("Learning Steps", cdp.steps_new_fmt[4:]),
-            ("",'   ' +  cdp.steps_new_str),
-            ("Graduating Ivl", cdp.GraduatingIvl + ' days'),
-            ("Easy Ivl", cdp.EasyIvl + ' days'),
-            ("Easy Bonus", cdp.easybonus + '%'),
-            ("Ivl Mod", self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS)),
-            ("Lapse NewIvl", self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int, LAPSE_MOD_COLOR_THRESHOLDS)),
+            ("Opt Group", p.d_OptionGroupName),             
+            ("Learning Steps", p.d_new_steps_fmt[4:]),
+            ("&nbsp;",'   ' +  p.d_new_steps_str),
+            ("Graduating Ivl", p.d_new_GradIvl + ' days'),
+            ("Easy Ivl", p.d_new_EasyIvl + ' days'),
+            ("Easy Bonus", p.d_rev_easybonus + '%'),
+            ("Ivl Mod", self.fmt_int_as_str__maybe_in_critical_color(p.d_rev_IntMod_int,IVL_MOD_COLOR_THRESHOLDS)),
+            ("Lapse NewIvl", self.fmt_int_as_str__maybe_in_critical_color(p.d_lapse_NewIvl_int, LAPSE_MOD_COLOR_THRESHOLDS)),
             ]
         return self.make_two_column_table(rows_long_deck_options)
 
 
-    def mini_card_stats(self,card,cdp,showOD):
+    def card_stats_as_in_browser(self, card, p):
+        # Extended Card Stats shows the info field that you see when you
+        # click "Info" in the toolbar of the browser with this line:
+        txt = ""
+        # txt = self.mw.col.cardStats(card)
+        # I rebuild this option here, so that it's easier to customize.
+        as_in_browser = [
+            ("Added", p.c_Added),
+            ("First Review", p.c_FirstReview),
+            ("Latest Review", p.c_LatestReview),
+            ("Due", p.c_Due),
+            ("Interval",p.c_Interval),
+            ("Ease", p.c_Ease_str),
+            ("Reviews", p.c_Reviews),
+            ("Lapses", p.c_Lapses),
+            ("Card Type", p.c_CardType),
+            ("Note Type", p.c_NoteType),
+            ("Deck", p.c_Deck),
+            ("Note ID", p.c_NoteID),
+            ("Card ID", p.c_CardID),]
+        
+        if p.cnt:
+            as_in_browser.insert(7,("Average Time",p.c_AverageTime))
+            as_in_browser.insert(8,("Total Time",p.c_TotalTime))
+
+        return  txt + self.make_two_column_table(as_in_browser)
+
+
+    def mini_card_stats(self,card,p,showOD):
+        """mini_card_stats is called for current and prior card. Overdue days doesn't make sense
+        for recently rated cards. So there needs to be an option to hide it. """
+        #ursprünglich war
+                # card_ivl_str=str(card.ivl),
+                # dueday=str(self.due_day(card)),
+                # value_for_overdue=str(self.valueForOverdue(card)),
+                # actual_ivl
+
+
+        right_column = p.card_ivl_str + ' (scheduled)'
         rows_mini_stats = [
-            ("Ivl days is:",cdp.card_ivl_str),
-            ("Ease:",cdp.easefct),
-            ("Due day:",cdp.dueday),
-            ("cid/card created:", cdp.cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  cdp.now),
+            ("Ivl",right_column),
+            # ("sched Ivl",p.card_ivl_str),
+            # ("actual Ivl",p.card_ivl_str),
+            ("Due day",p.dueday),
+            ("cid/card created", str(p.c_CardID) + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  p.now),
+            ("Ease",p.c_Ease_str),
         ]
         if showOD:
-            rows_mini_stats.insert(1,("Overdue days: ",cdp.value_for_overdue))
+            rows_mini_stats.insert(1,("Overdue days: ",p.value_for_overdue))
         return self.make_two_column_table(rows_mini_stats)
 
 
@@ -331,8 +399,8 @@ class StatsSidebar(object):
         list_of_rows = []
         
         row1 = [["Date","left"],
-                ["Type","right"],
-                ["Rat","right"],
+                ["T","right"],
+                ["R","right"],
                 ["Ivl","right"],
                 ["IntDate","right"],
                 ["Ease","right"],]
@@ -387,7 +455,7 @@ class StatsSidebar(object):
         return  self.make_multi_column_table_first_row_bold(list_of_rows)
 
 
-    def text_for_scheduler_comparison(self, card, cdp):
+    def text_for_scheduler_comparison(self, card, p):
         txt= ""
         try: 
             orig_hard_days = mw.col.sched.original_nextRevIvl(card, 2)
@@ -422,7 +490,7 @@ class StatsSidebar(object):
                 return self.make_multi_column_table_first_row_bold([row1,row2,row3])
 
 
-    def text_for_short_options(self,card,cdp): 
+    def text_for_short_options(self,card,p): 
         row1 = [["OptGr","left"],
                 ["Steps","center"],
                 ["GrIv","center"],
@@ -431,17 +499,17 @@ class StatsSidebar(object):
                 ["IvMo","center"],
                 ["LpIv","center"],]
         # option group names can be very long
-        if len(cdp.optiongroup) > 15 and DECK_NAMES_LENGTH:
-            groupname = cdp.optiongroup_fmt
+        if len(p.d_OptionGroupName) > 15 and DECK_NAMES_LENGTH:
+            groupname = p.d_OptionGroupName_fmt
         else:
-            groupname = cdp.optiongroup
-        im_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.im_int,IVL_MOD_COLOR_THRESHOLDS)
-        lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(cdp.lapse_ivl_int,LAPSE_MOD_COLOR_THRESHOLDS)
+            groupname = p.d_OptionGroupName
+        im_colored = self.fmt_int_as_str__maybe_in_critical_color(p.d_rev_IntMod_int,IVL_MOD_COLOR_THRESHOLDS)
+        lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(p.d_lapse_NewIvl_int,LAPSE_MOD_COLOR_THRESHOLDS)
         row2 = [[groupname,"left"],
-                [cdp.steps_new_str[1:-1],"center"],
-                [cdp.GraduatingIvl,"center"],
-                [cdp.EasyIvl,"center"],
-                [cdp.easybonus,"center"],
+                [p.d_new_steps_str[1:-1],"center"],
+                [p.d_new_GradIvl,"center"],
+                [p.d_new_EasyIvl,"center"],
+                [p.d_rev_easybonus,"center"],
                 [im_colored,"center"],
                 [lapse_colored,"center"],]
         #self.show_info_length_of_sublists([row1,row2])
@@ -449,45 +517,76 @@ class StatsSidebar(object):
 
 
     def current_card_deck_properties_as_namedtuple(self,card):
-        cdp = namedtuple('CardProps', """
-                conf
-                cid
-                Reviews
-                Lapses
-                Type
-                steps_new_int
-                steps_new_str
-                steps_new_fmt
-                GraduatingIvl
-                EasyIvl
-                Starting_ease
-                new__order_of_new_cards
-                new__cards_per_day                
-                bury_related_new_cards
-                MaxiumReviewsPerDay
-                im_int
-                im_str
-                easybonus
-                MaximumInterval
-                bury_related_reviews_until_next_day
-                lapse_leech_threshold
-                lapse_leech_action
-                lapse_ivl_int
-                lapse_ivl_str
-                lapse_mint_int
-                lapse_learning_steps
-                easefct
-                optiongroup
-                optiongroup_fmt
+        p = namedtuple('CardProps', """
+                c_Added
+                c_FirstReview
+                c_LatestReview
+                c_Due
+                c_Interval
+                c_Ease
+                c_Ease_str
+                c_Reviews
+                c_Lapses
+                c_AverageTime
+                c_TotalTime
+                c_Position
+                c_CardType
+                c_NoteType
+                c_Deck
+                c_NoteID
+                c_CardID
+
+                cnt
+                total
+                card_ivl_str
+                dueday
+                value_for_overdue
+                actual_ivl
+                c_type
                 deckname
                 deckname_fmt
                 source_deck_name
                 source_deck_name_fmt
-                card_ivl_str
-                dueday
-                value_for_overdue
                 now
+                
+                conf
+                
+                d_OptionGroupID
+                d_OptionGroupName
+                d_OptionGroupName_fmt
+                d_IgnoreAnsTimesLonger
+                d_ShowAnswerTimer
+                d_Autoplay
+                d_Replayq
+                d_IsDyn
+                d_usn
+                d_mod
+                d_new_steps
+                d_new_steps_str
+                d_new_steps_fmt
+                d_new_order
+                d_new_NewPerDay
+                d_new_GradIvl
+                d_new_EasyIvl
+                d_new_StartingEase
+                d_new_BurySiblings
+                d_new_sep
+                d_rev_perDay
+                d_rev_easybonus
+                d_rev_IntMod_int
+                d_rev_IntMod_str
+                d_rev_MaxIvl
+                d_rev_BurySiblings
+                d_rev_minSpace
+                d_rev_fuzz
+                d_lapse_steps
+                d_lapse_NewIvl_int
+                d_lapse_NewIvl_str
+                d_lapse_MinInt
+                d_lapse_LeechThresh
+                d_lapse_LeechAction
                 """)
+
 
         if card.odid:
             conf=self.mw.col.decks.confForDid(card.odid)
@@ -500,44 +599,104 @@ class StatsSidebar(object):
         for i in conf['new']['delays']:
             formatted_steps += ' -- ' + fmtTimeSpan(i * 60, short=True)
         
-        out = cdp(
-                conf=conf,
-                cid=str(card.id),
-                Reviews=card.reps,
-                Lapses=card.lapses,
-                Type=card.type,
-                steps_new_int=conf['new']['delays'],
-                steps_new_str=str(conf['new']['delays']),
-                steps_new_fmt=formatted_steps, # self.fmt_long_string(str(conf['new']['delays']),OPTIONGROUP_NAMES_LENGTH),
-                GraduatingIvl=str(conf['new']['ints'][0]),
-                EasyIvl=str(conf['new']['ints'][1]),
-                Starting_ease = conf['new']['initialFactor'] / 10 ,
-                new__order_of_new_cards=conf['new']['order'],
-                new__cards_per_day=conf['new']['perDay'],
-                bury_related_new_cards=conf['new']['bury'],
-                MaxiumReviewsPerDay=conf['rev']['perDay'],
-                im_int=int(100 * conf['rev']['ivlFct']),
-                im_str=str(int(100 * conf['rev']['ivlFct'])),
-                easybonus=str(int(100 * conf['rev']['ease4'])),
-                MaximumInterval=conf['rev']['maxIvl'],
-                bury_related_reviews_until_next_day = conf['rev']['bury'],
-                lapse_leech_threshold = conf['lapse']['leechFails'],
-                lapse_leech_action  = conf['lapse']['leechAction'],
-                lapse_ivl_int=int(100 * conf['lapse']['mult']),
-                lapse_ivl_str=str(int(100 * conf['lapse']['mult'])),
-                lapse_mint_int=conf['lapse']['minInt'],
-                lapse_learning_steps=conf['lapse']['delays'],
-                easefct=str(int(card.factor/10.0)),
-                optiongroup=conf['name'],
-                optiongroup_fmt=self.fmt_long_string(conf['name'],OPTIONGROUP_NAMES_LENGTH),
-                deckname=aqt.mw.col.decks.get(card.did)['name'],
-                deckname_fmt=self.fmt_long_string(aqt.mw.col.decks.get(card.did)['name'],DECK_NAMES_LENGTH),
-                source_deck_name=source_deck_name,
-                source_deck_name_fmt=self.fmt_long_string(source_deck_name,DECK_NAMES_LENGTH),
+        #############
+        #from anki.stats.py
+        (cnt, total) = self.mw.col.db.first(
+                "select count(), sum(time)/1000 from revlog where cid = :id",
+                id=card.id)
+        first = self.mw.col.db.scalar(
+            "select min(id) from revlog where cid = ?", card.id)
+        last = self.mw.col.db.scalar(
+            "select max(id) from revlog where cid = ?", card.id)
+
+        def date(tm):
+            return time.strftime("%Y-%m-%d", time.localtime(tm))
+            #return time.localtime(tm)
+
+        def stattime(tm):
+            str = ""
+            if tm >= 60:
+                str = fmtTimeSpan((tm/60)*60, short=True, point=-1, unit=1)
+            if tm%60 != 0 or not str:
+                str += fmtTimeSpan(tm%60, point=2 if not str else -1, short=True)
+            return str
+
+        fmt = lambda x, **kwargs: fmtTimeSpan(x, short=True, **kwargs)
+
+
+
+
+
+        out = p(
+                #Card Stats as seen in Browser
+                c_Added        = date(card.id/1000),
+                c_FirstReview  = date(first/1000) if first else "",
+                c_LatestReview = date(last/1000)if last else "",
+                c_Due          = self.due_day(card),
+                c_Interval     = fmt(card.ivl * 86400) if card.queue == 2 else "",
+                c_Ease         ="%d%%" % (card.factor/10.0),
+                c_Ease_str     = str("%d%%" % (card.factor/10.0)),
+                c_Reviews      = "%d" % card.reps,
+                c_Lapses       = "%d" % card.lapses,
+                c_AverageTime  = stattime(total / float(cnt)) if cnt else "",
+                c_TotalTime    = stattime(total) if cnt else "",
+                c_Position     = card.due if card.queue == 0 else "",
+                c_CardType     = card.template()['name'],
+                c_NoteType     = card.model()['name'],
+                c_Deck         = self.mw.col.decks.name(card.did),
+                c_NoteID       = card.nid,
+                c_CardID       = card.id,
+
+                #other useful info
+                cnt=cnt,
+                total=total,
                 card_ivl_str=str(card.ivl),
                 dueday=str(self.due_day(card)),
                 value_for_overdue=str(self.valueForOverdue(card)),
-                now=time.strftime('%Y-%m-%d %H:%M', time.localtime(card.id/1000))
+                actual_ivl= str(card.ivl + self.valueForOverdue(card)),
+                c_type=card.type,
+                deckname=self.mw.col.decks.get(card.did)['name'],
+                deckname_fmt=self.fmt_long_string(aqt.mw.col.decks.get(card.did)['name'],DECK_NAMES_LENGTH),
+                source_deck_name=source_deck_name,
+                source_deck_name_fmt=self.fmt_long_string(source_deck_name,DECK_NAMES_LENGTH),
+                now = time.strftime('%Y-%m-%d %H:%M', time.localtime(card.id/1000)),
+                
+                conf = conf,
+                #Deck Options
+                d_OptionGroupID       = conf['id'],
+                d_OptionGroupName     = conf['name'],
+                d_OptionGroupName_fmt = self.fmt_long_string(conf['name'],OPTIONGROUP_NAMES_LENGTH),
+                d_IgnoreAnsTimesLonger= conf["maxTaken"],
+                d_ShowAnswerTimer     = conf["timer"],
+                d_Autoplay            = conf["autoplay"],
+                d_Replayq             = conf["replayq"],
+                d_IsDyn               = conf["dyn"],
+                d_usn                 = conf["usn"],
+                d_mod                 = conf["mod"],
+                d_new_steps           = conf['new']['delays'],
+                d_new_steps_str       = str(conf['new']['delays']),
+                d_new_steps_fmt       = formatted_steps,
+                d_new_order           = conf['new']['order'],
+                d_new_NewPerDay       = conf['new']['perDay'],
+                d_new_GradIvl         = str(conf['new']['ints'][0]), 
+                d_new_EasyIvl         = str(conf['new']['ints'][1]),
+                d_new_StartingEase    = conf['new']['initialFactor'] / 10 ,
+                d_new_BurySiblings    = conf['new']['bury'],
+                d_new_sep             = conf['new']["separate"], #unused
+                d_rev_perDay          = conf['rev']['perDay'],
+                d_rev_easybonus       = str(int(100 * conf['rev']['ease4'])),
+                d_rev_IntMod_int      = int(100 * conf['rev']['ivlFct']),     
+                d_rev_IntMod_str      = str(int(100 * conf['rev']['ivlFct'])),          
+                d_rev_MaxIvl          = conf['rev']['maxIvl'],
+                d_rev_BurySiblings    = conf['rev']['bury'],
+                d_rev_minSpace        = conf['rev']["minSpace"], # unused
+                d_rev_fuzz            = conf['rev']["fuzz"],     # unused
+                d_lapse_steps         = conf['lapse']['delays'],
+                d_lapse_NewIvl_int    = int(100 * conf['lapse']['mult']),
+                d_lapse_NewIvl_str    = str(int(100 * conf['lapse']['mult'])),
+                d_lapse_MinInt        = conf['lapse']['minInt'],
+                d_lapse_LeechThresh   = conf['lapse']['leechFails'],
+                d_lapse_LeechAction   = conf['lapse']['leechAction'],
         )
         return out
 
@@ -549,30 +708,30 @@ class StatsSidebar(object):
         cs = CardStats(self.mw.col, self.mw.reviewer.card)
         card = self.mw.reviewer.card
         if card:
-            cdp = self.current_card_deck_properties_as_namedtuple(card)   #card-decks-properties
+            p = self.current_card_deck_properties_as_namedtuple(card)   #card-decks-properties
 
             txt += _("<h3>Current Card</h3>")
 
             if TRY_TO_SHOW_ORIGvMOD_SCHEDULER:
                 #txt += _('<h4>Scheduler Comparison</h4>')
-                txt += self.text_for_scheduler_comparison(card, cdp)
+                txt += self.text_for_scheduler_comparison(card, p)
                 txt += "<hr>"
 
             #txt += _("<h4>Deck Options</h4>")  
             if SHOW_BRIEF_DECK_OPTONS: 
-                txt += self.text_for_short_options(card,cdp)
+                txt += self.text_for_short_options(card,p)
                 txt += "<hr>"
 
             if SHOW_DECK_NAMES:
-                txt += self.deck_name_and_source_for_filtered(card,cdp)
+                txt += self.deck_name_and_source_for_filtered(card,p)
 
             if SHOW_LONG_DECK_OPTIONS:
-                txt += self.text_for_long_options(card,cdp)
+                txt += self.long_deck_options(card,p)
 
             if SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD:
-                txt += self.mw.col.cardStats(card)
+                txt += self.card_stats_as_in_browser(card,p)
             else:
-                txt += self.mini_card_stats(card, cdp, True)
+                txt += self.mini_card_stats(card, p, True)
             txt += "<p>"
             txt += self._revlogData_mod(card, cs, NUM_OF_REVS)
 
@@ -583,12 +742,12 @@ class StatsSidebar(object):
             if SHOW_DETAILLED_CARD_STATS_FOR_CURRENT_CARD:
                 txt += self.mw.col.cardStats(lc)
             else:
-                lcdp = self.current_card_deck_properties_as_namedtuple(lc) 
-                txt += self.mini_card_stats(lc, lcdp, False)
+                lp = self.current_card_deck_properties_as_namedtuple(lc) 
+                txt += self.mini_card_stats(lc, lp, False)
             txt += "<p>"
             txt += self._revlogData_mod(lc, cs, NUM_OF_REVS)
-        if not txt:
-            txt = _("No current card or last card.")
+        if mw.state!='review':
+            txt = _("No Card")
         style = self._style()
         self.web.setHtml("""
 <html><head>
