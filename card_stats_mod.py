@@ -446,7 +446,7 @@ class StatsSidebar(object):
                      [ease,"right"],
                      [ivl,"right"],
                      [int_due,"right"],
-                     [factor / 10 if factor else "","right"],]
+                     [int(factor / 10) if factor else "","right"],]
             if not HIDE_TIME_COLUMN_FROM_REVLOG:
                 row_n.append([cs.time(taken),"right"])
             list_of_rows.append(list(row_n))  # copy list
@@ -493,6 +493,7 @@ class StatsSidebar(object):
     def text_for_short_options(self,card,p): 
         row1 = [["OptGr","left"],
                 ["Steps","center"],
+                ["LSteps","center"],
                 ["GrIv","center"],
                 ["EaIv","center"],
                 ["EaBo","center"],
@@ -507,6 +508,7 @@ class StatsSidebar(object):
         lapse_colored = self.fmt_int_as_str__maybe_in_critical_color(p.d_lapse_NewIvl_int,LAPSE_MOD_COLOR_THRESHOLDS)
         row2 = [[groupname,"left"],
                 [p.d_new_steps_str[1:-1],"center"],
+                [p.d_lapse_steps_str[1:-1],"center"],
                 [p.d_new_GradIvl,"center"],
                 [p.d_new_EasyIvl,"center"],
                 [p.d_rev_easybonus,"center"],
@@ -580,6 +582,7 @@ class StatsSidebar(object):
                 d_rev_minSpace
                 d_rev_fuzz
                 d_lapse_steps
+                d_lapse_steps_str
                 d_lapse_NewIvl_int
                 d_lapse_NewIvl_str
                 d_lapse_MinInt
@@ -692,6 +695,7 @@ class StatsSidebar(object):
                 d_rev_minSpace        = conf['rev']["minSpace"], # unused
                 d_rev_fuzz            = conf['rev']["fuzz"],     # unused
                 d_lapse_steps         = conf['lapse']['delays'],
+                d_lapse_steps_str     = str(conf['lapse']['delays']),
                 d_lapse_NewIvl_int    = int(100 * conf['lapse']['mult']),
                 d_lapse_NewIvl_str    = str(int(100 * conf['lapse']['mult'])),
                 d_lapse_MinInt        = conf['lapse']['minInt'],
