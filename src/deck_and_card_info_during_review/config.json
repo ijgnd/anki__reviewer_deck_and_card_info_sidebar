@@ -1,0 +1,17 @@
+{
+    "critical_color_lower": "red",
+    "critical_color_upper": "blue",
+    "deck_options": "brief",
+    "deck_names_length": 40,
+    "hide_time_column_from_revlog": true,
+    "highlight_colors": true,
+    "num_of_revs": 3,
+    "optiongroup_names_length": 20,
+    "show_deck_names": true,
+    "show_detailed_card_stats_for_current_card": false,
+    "thresholds__ivl_mod_color__lower": 70,
+    "thresholds__ivl_mod_color__upper": 110,
+    "thresholds__lapse_mod_color__lower": 30,
+    "thresholds__lapse_mod_color__upper": 70,
+    "try_to_show_origvmod_scheduler": true
+}

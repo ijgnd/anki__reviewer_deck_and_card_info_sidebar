@@ -1,0 +1,15 @@
+- `critical_color_lower`: default is "red",
+- `critical_color_upper`: default is "blue",
+- `deck_names_length`: default is 40, if a string is longer it's split up over multiple lines
+- `deck_options`: "brief" or "long"
+- `hide_time_column_from_revlog`: "true" or "false"
+- `highlight_colors`:   "true" or "false"
+- `num_of_revs`:  default is 3,  how many prior reviews should be shown in table for current and prior card
+- `optiongroup_names_length`: default is 20,
+- `show_deck_names`: "true" or "false"
+- `show_detailed_card_stats_for_current_card`:  "true" or "false"
+- `thresholds__ivl_mod_color__lower`:  70,
+- `thresholds__ivl_mod_color__upper`:  110,
+- `thresholds__lapse_mod_color__lower`:  30, 
+- `thresholds__lapse_mod_color__upper`:  70 
+- `try_to_show_origvmod_scheduler`:  "true" or "false"
