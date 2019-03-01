@@ -107,5 +107,3 @@ else:
         _writeAddonMeta({"config": config})
 
 local_conf = getConfig() 
-print('LOKAL')
-print(local_conf)
