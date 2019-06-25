@@ -1,5 +1,3 @@
-- `critical_color_lower`: default is "red",
-- `critical_color_upper`: default is "blue",
 - `deck_names_length`: default is 40, if a string is longer it's split up over multiple lines
 - `deck_options`: "brief" or "long"
 - `hide_time_column_from_revlog`: "true" or "false"

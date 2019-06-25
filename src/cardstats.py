@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
+from aqt import mw
 
-from .config import local_conf
-from .helper_functions import *
+from .config import gc
+from .helper_functions import make_two_column_table
 
 
-def mini_card_stats(card,p,showOD):
+def mini_card_stats(card, p, showOD):
     """mini_card_stats is called for current and prior card. Overdue days doesn't make sense
     for recently rated cards. So there needs to be an option to hide it. """
     # originally this was:
@@ -15,16 +15,16 @@ def mini_card_stats(card,p,showOD):
 
     right_column = p.card_ivl_str + ' (scheduled)'
     rows_mini_stats = [
-        ("Ivl",right_column),
+        ("Ivl", right_column),
         # ("sched Ivl",p.card_ivl_str),
         # ("actual Ivl",p.card_ivl_str),
-        ("Due day",p.dueday),
-        ("cid/card created", str(p.c_CardID) + '&nbsp;&nbsp;--&nbsp;&nbsp;' +  p.now),
-        ("Ease",p.c_Ease_str),
+        ("Due day", p.dueday),
+        ("cid/card created", str(p.c_CardID) + '&nbsp;&nbsp;--&nbsp;&nbsp;' + p.now),
+        ("Ease", p.c_Ease_str),
     ]
     if showOD:
-        rows_mini_stats.insert(1,("Overdue days: ",p.value_for_overdue))
-    return make_two_column_table(rows_mini_stats) 
+        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue))
+    return make_two_column_table(rows_mini_stats)
 
 
 def card_stats_as_in_browser(card, p):
@@ -38,7 +38,7 @@ def card_stats_as_in_browser(card, p):
         ("First Review", p.c_FirstReview),
         ("Latest Review", p.c_LatestReview),
         ("Due", p.c_Due),
-        ("Interval",p.c_Interval),
+        ("Interval", p.c_Interval),
         ("Ease", p.c_Ease_str),
         ("Reviews", p.c_Reviews),
         ("Lapses", p.c_Lapses),
@@ -46,10 +46,9 @@ def card_stats_as_in_browser(card, p):
         ("Note Type", p.c_NoteType),
         ("Deck", p.c_Deck),
         ("Note ID", p.c_NoteID),
-        ("Card ID", p.c_CardID),]
-    
+        ("Card ID", p.c_CardID),
+        ]
     if p.cnt:
-        as_in_browser.insert(7,("Average Time",p.c_AverageTime))
-        as_in_browser.insert(8,("Total Time",p.c_TotalTime))
-
-    return  txt + make_two_column_table(as_in_browser)
+        as_in_browser.insert(7, ("Average Time", p.c_AverageTime))
+        as_in_browser.insert(8, ("Total Time", p.c_TotalTime))
+    return txt + make_two_column_table(as_in_browser)

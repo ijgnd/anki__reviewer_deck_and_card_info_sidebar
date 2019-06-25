@@ -1,0 +1,43 @@
+body {
+    background-color: #dedede;
+    margin: 8px;
+}
+p { 
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+h1,h2,h3,h4{
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+} 
+
+/* anki.stats
+
+colYoung = "#7c7"
+colMature = "#070"
+colCum = "rgba(0,0,0,0.9)"
+colLearn = "#00F"
+colRelearn = "#c00"
+colCram = "#ff0"
+colIvl = "#077"
+colHour = "#ccc"
+colTime = "#770"
+colUnseen = "#000"
+colSusp = "#ff0"
+*/
+
+.color_learn {color: #00F;}
+.color_mature {color: #070;}
+.color_relearn {color: #c00;}
+.color_type3 {color: #3c9690;}
+.color_rest {color: #000;}
+.color_ease3 {color: navy;}
+.color_ease4 {color:  darkgreen;}
+
+.critical_color_lower {color:  red;}
+.critical_color_upper {color:  blue;}

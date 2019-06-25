@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
-This is a modification of glutanimates [Extended Card stats during review](https://ankiweb.net/shared/info/1008566916) (ECDR).
-I mainly made this add-on to check some modifications I made to Anki's scheduler.
-This modification adds some info I find interesting and hides other content.
-
+This is a very extended  modification of glutanimates
+[Extended Card stats during review](https://ankiweb.net/shared/info/1008566916) (ECDR).
+This modification adds some info I find interesting and hides other content and
+adds some support for the night mode add-on.
 
 copyright (c) 2018-2019 ijgnd
 
@@ -12,7 +10,7 @@ other authors:
 - (c) Ankitects Pty Ltd and contributors
 - (c) Glutanimate 2015-2018
 - (c) Lovac42 2018
-- (c) Steve AW 2013 
+- (c) Steve AW 2013
 - (c) hssm
 
 This program is free software: you can redistribute it and/or modify
@@ -29,7 +27,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-
 This add-on incorporates or slightly modifies many functions from the anki source and these add-ons
 - [Frozen Fields](https://ankiweb.net/shared/info/516643804)
 - [Extended Card stats during review](https://ankiweb.net/shared/info/1008566916)
@@ -39,8 +36,7 @@ This add-on incorporates or slightly modifies many functions from the anki sourc
 - [reviewer_show_cardinfo](https://github.com/steveaw/anki_addons/)
 
 
-
-STRUCTURE OF THIS ADD-ON    
+STRUCTURE OF THIS ADD-ON
 
 - consts.py, config.py
     returns config, taken from Frozen Fields add-on
@@ -49,17 +45,17 @@ STRUCTURE OF THIS ADD-ON
 - sidebar_base.py
     for managing the sidebar. contains unmodified functions from ECDR
 - cardstats.py
-    contains functions that return a short or long table containig important 
+    contains functions that return a short or long table containig important
     card properties
 - deckoptions.py
-    contains functions that return a short or long table containig important 
-    deck properties  
+    contains functions that return a short or long table containig important
+    deck properties
 - helper_functions.py
     contains various function used in cardstats.py and deckoptions.py
 - revlog.py
     contains a function that returns a table with the revlog for a card
 - schedulercomparison.py
-    most likely irrelevant for you. contains a function that returns a table 
+    most likely irrelevant for you. contains a function that returns a table
     that compares Anki's scheduler with a modification I use
 - styling.css
     css that is applied to the sidebar
@@ -80,7 +76,10 @@ from .sidebar_base import StatsSidebar
 def dbg(text):
     pprint.pprint(text)
 
+
 _cs = StatsSidebar(mw)
+
+
 def cardStats(on):
     _cs.toggle()
 
