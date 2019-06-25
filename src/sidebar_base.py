@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from aqt import mw
 from aqt.qt import *
 from anki.hooks import addHook

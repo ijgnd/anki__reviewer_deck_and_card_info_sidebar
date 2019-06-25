@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 
 import anki.stats as ankistats
@@ -13,8 +11,8 @@ from .helper_functions import (
 )
 
 
-#copied from Browser, added IntDate column
-#cleanup inspired by  warrior mode
+# copied from Browser, added IntDate column
+# cleanup inspired by  warrior mode
 def revlogData_mod(self, card, limit):
     entries = self.mw.col.db.all(
         "select id/1000.0, ease, ivl, factor, time/1000.0, type "

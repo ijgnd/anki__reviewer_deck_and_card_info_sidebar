@@ -75,7 +75,7 @@ def valueForOverdue(card):
 def percent_overdue(card):
     overdue = mw.col.sched._daysLate(card)
     ivl = card.ivl
-    if card.ivl > 0:
+    if ivl > 0:
         return (overdue+ivl)/ivl
 
 

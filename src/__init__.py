@@ -28,7 +28,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 This add-on incorporates or slightly modifies many functions from the anki source and these add-ons
-- [Frozen Fields](https://ankiweb.net/shared/info/516643804)
 - [Extended Card stats during review](https://ankiweb.net/shared/info/1008566916)
 - [Advanced Browser](https://ankiweb.net/shared/info/874215009)
 - [Warrior Mode - Stats & Debug](https://ankiweb.net/shared/info/4241959)
