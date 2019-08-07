@@ -1,0 +1,10 @@
+{
+    "name": "deck and card info sidebar during review",
+    "package": "673114053",
+    "ankiweb_id": "673114053",
+    "author": "ijgnd",
+    "version": "v0.4.0",
+    "homepage": "https://github.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar",
+    "mod": "",
+    "conflicts": ["2091361802","4241959","1008566916","2179254157"]
+}  
