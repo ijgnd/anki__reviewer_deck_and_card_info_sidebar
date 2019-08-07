@@ -20,6 +20,10 @@ h1,h2,h3,h4{
     margin-right: 0;
     font-weight: bold;
 }
+a:link {
+    text-decoration: none;
+    color:#d7d7d7;
+}
 
 .color_learn {color: #01b3f5;}
 .color_mature {color: #070;}
