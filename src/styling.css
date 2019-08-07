@@ -14,7 +14,11 @@ h1,h2,h3,h4{
     margin-left: 0;
     margin-right: 0;
     font-weight: bold;
-} 
+}
+a:link {
+    text-decoration: none;
+    color:black;
+}
 
 /* anki.stats
 

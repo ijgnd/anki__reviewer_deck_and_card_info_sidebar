@@ -1,3 +1,4 @@
+import aqt 
 from aqt import mw
 from aqt.qt import *
 from anki.hooks import addHook
@@ -23,14 +24,14 @@ class StatsSidebar(object):
             def closeEvent(self, evt):
                 self.closed.emit()
                 QDockWidget.closeEvent(self, evt)
-        dock = DockableWithClose(title, mw)
+        dock = DockableWithClose(title, self.mw)
         dock.setObjectName(title)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         dock.setFeatures(QDockWidget.DockWidgetClosable)
         dock.setWidget(w)
-        if mw.width() < 600:
-            mw.resize(QSize(600, mw.height()))
-        mw.addDockWidget(Qt.RightDockWidgetArea, dock)
+        if self.mw.width() < 600:
+            self.mw.resize(QSize(600, self.mw.height()))
+        self.mw.addDockWidget(Qt.RightDockWidgetArea, dock)
         if self.darkmode:
             # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
             # I think I can't style the divider since this like a window border which are
@@ -46,7 +47,7 @@ class StatsSidebar(object):
         return dock
 
     def _remDockable(self, dock):
-        mw.removeDockWidget(dock)
+        self.mw.removeDockWidget(dock)
 
     def show(self):
         if not self.shown:
@@ -64,6 +65,7 @@ class StatsSidebar(object):
             self.web = ThinAnkiWebView(self)
             self.shown = self._addDockable("", self.web)
             self.shown.closed.connect(self._onClosed)
+            self.web.onBridgeCmd = self.myLinkHandler
         self._update_contents_of_sidebar()
 
     # def onDarkMode(self):
@@ -84,7 +86,7 @@ class StatsSidebar(object):
     def _onClosed(self):
         # schedule removal for after evt has finished
         self.mw.progress.timer(100, self.hide, False)
-
+        
     def _update_contents_of_sidebar(self):
         a = None
         self.darkmode = False
@@ -102,3 +104,21 @@ class StatsSidebar(object):
                 self.show()
         else:
             update_contents_of_sidebar(self)
+    
+    def myLinkHandler(self, url):
+        if url.startswith("BrowserSearch#"):
+            out = url.replace("BrowserSearch#", "").split("#", 1)[0]
+            self.openBrowser("cid:" + out)
+            
+    def openBrowser(self, searchterm):
+        # https://ankiweb.net/shared/info/861864770
+        # Open 'Added Today' from Reviewer
+        # Copyright (c) 2013 Steve AW
+        # Copyright (c) 2016-2017 Glutanimate
+        browser = aqt.dialogs.open("Browser", self.mw)
+        browser.form.searchEdit.lineEdit().setText(searchterm)
+        browser.onSearchActivated()
+        if u'noteCrt' in browser.model.activeCols:
+            col_index = browser.model.activeCols.index(u'noteCrt')
+            browser.onSortChanged(col_index, True)
+        browser.form.tableView.selectRow(0)  

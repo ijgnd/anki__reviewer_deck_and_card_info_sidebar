@@ -33,6 +33,7 @@ This add-on incorporates or slightly modifies many functions from the anki sourc
 - [Warrior Mode - Stats & Debug](https://ankiweb.net/shared/info/4241959)
 - [Card Info During Review](https://ankiweb.net/shared/info/2179254157)
 - [reviewer_show_cardinfo](https://github.com/steveaw/anki_addons/)
+- [Open 'Added Today' from Reviewer](https://ankiweb.net/shared/info/861864770)
 
 
 STRUCTURE OF THIS ADD-ON

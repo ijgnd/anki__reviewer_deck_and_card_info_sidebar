@@ -12,14 +12,15 @@ def mini_card_stats(card, p, showOD):
     # dueday=str(self.due_day(card)),
     # value_for_overdue=str(self.valueForOverdue(card)),
     # actual_ivl
-
     right_column = p.card_ivl_str + ' (scheduled)'
+    clickable_cid = '''<a href=# onclick="return pycmd('%s')">%s</a>''' %(
+        "BrowserSearch#" + str(p.c_CardID), str(p.c_CardID))
     rows_mini_stats = [
         ("Ivl", right_column),
         # ("sched Ivl",p.card_ivl_str),
         # ("actual Ivl",p.card_ivl_str),
         ("Due day", p.dueday),
-        ("cid/card created", str(p.c_CardID) + '&nbsp;&nbsp;--&nbsp;&nbsp;' + p.now),
+        ("cid/card created", clickable_cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' + p.now),
         ("Ease", p.c_Ease_str),
     ]
     if showOD:
