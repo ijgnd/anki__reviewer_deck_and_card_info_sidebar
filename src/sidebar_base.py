@@ -12,12 +12,20 @@ class StatsSidebar(object):
     def __init__(self, mw):
         self.mw = mw
         self.shown = False
-        addHook("showQuestion", self._update_contents_of_sidebar)
+        self.night_mode_on = False
+        addHook("showQuestion", lambda: update_contents_of_sidebar(self))
         addHook("deckClosing", self.hide)
         addHook("reviewCleanup", self.hide)
-        self.darkmode = False
-        self.laststate = None
+        addHook("night_mode_state_changed", self.refresh)
 
+    def refresh(self, nm_state):
+        self.night_mode_on=nm_state
+        if self.shown:
+            self._remDockable(self.shown)
+        self.shown = None
+        if self.mw.state == "review":
+            self.show()
+        
     def _addDockable(self, title, w):
         class DockableWithClose(QDockWidget):
             closed = pyqtSignal()
@@ -32,7 +40,7 @@ class StatsSidebar(object):
         if self.mw.width() < 600:
             self.mw.resize(QSize(600, self.mw.height()))
         self.mw.addDockWidget(Qt.RightDockWidgetArea, dock)
-        if self.darkmode:
+        if self.night_mode_on:
             # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
             # I think I can't style the divider since this like a window border which are
             # owned by the OS?
@@ -66,11 +74,7 @@ class StatsSidebar(object):
             self.shown = self._addDockable("", self.web)
             self.shown.closed.connect(self._onClosed)
             self.web.onBridgeCmd = self.myLinkHandler
-        self._update_contents_of_sidebar()
-
-    # def onDarkMode(self):
-    #     self.darkmode ^= True
-    #     self._update_contents_of_sidebar()
+        update_contents_of_sidebar(self)
 
     def hide(self):
         if self.shown:
@@ -86,24 +90,6 @@ class StatsSidebar(object):
     def _onClosed(self):
         # schedule removal for after evt has finished
         self.mw.progress.timer(100, self.hide, False)
-        
-    def _update_contents_of_sidebar(self):
-        a = None
-        self.darkmode = False
-        try:
-            a = __import__("1496166067").night_mode.config.state_on.value
-        except:
-            pass
-        if a:
-            self.darkmode = True
-        if a != self.laststate:
-            self.laststate = a
-            if self.shown:
-                self._remDockable(self.shown)
-                self.shown = None
-                self.show()
-        else:
-            update_contents_of_sidebar(self)
     
     def myLinkHandler(self, url):
         if url.startswith("BrowserSearch#"):

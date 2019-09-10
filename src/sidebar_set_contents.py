@@ -60,7 +60,7 @@ def update_contents_of_sidebar(self):
         txt += revlogData_mod(self, lc, gc('num_of_revs', 3))
     if mw.state != 'review':
         txt = _("No Card")
-    if self.darkmode:
+    if self.night_mode_on:
         style = sidebar_style("styling_dark.css")
     else:
         style = sidebar_style("styling.css")
