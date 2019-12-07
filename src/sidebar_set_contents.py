@@ -6,6 +6,7 @@ from .card_deck_properties import current_card_deck_properties
 from .cardstats import (
     card_stats_as_in_browser,
     mini_card_stats,
+    mini_card_stats_with_ord
 )
 from .deckoptions import long_deck_options, text_for_short_options
 from .schedulercomparison import text_for_scheduler_comparison
@@ -45,6 +46,8 @@ def update_contents_of_sidebar(self):
 
         if gc('card_stats') == "detailed":
             txt += card_stats_as_in_browser(card, p)
+        elif gc('card_stats') == "brief_with_ord":
+            txt += mini_card_stats_with_ord(card, p, True)
         else:
             txt += mini_card_stats(card, p, True)
         txt += "<p>"

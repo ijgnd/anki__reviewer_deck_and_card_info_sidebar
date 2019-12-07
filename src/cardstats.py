@@ -26,6 +26,26 @@ def mini_card_stats(card, p, showOD):
     if showOD:
         rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + '  (' + p.overdue_percent + '%)' ))
     return make_two_column_table(rows_mini_stats)
+
+
+def mini_card_stats_with_ord(card, p, showOD):
+    """mini_card_stats is called for current and prior card. Overdue days doesn't make sense
+    for recently rated cards. So there needs to be an option to hide it. """
+    right_column = p.card_ivl_str + ' (scheduled)'
+    clickable_cid = '''<a href=# onclick="return pycmd('%s')">%s</a>''' %(
+        "BrowserSearch#" + str(p.c_CardID), str(p.c_CardID))
+    rows_mini_stats = [
+        ("Ivl", right_column),
+        # ("sched Ivl",p.card_ivl_str),
+        # ("actual Ivl",p.card_ivl_str),
+        ("Due day", p.dueday),
+        ("cid/card created", clickable_cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' + p.now),
+        ("Template No.", p.c_ord),
+        ("Deck(did)", p.c_Deck + '   (' + str(p.c_did) + ')'),
+        ("Ease", p.c_Ease_str),
+    ]
+    if showOD:
+        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + '  (' + p.overdue_percent + '%)' ))
     return make_two_column_table(rows_mini_stats)
 
 
