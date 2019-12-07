@@ -5,7 +5,7 @@
 - `num_of_revs`:  default is 3,  how many prior reviews should be shown in table for current and prior card
 - `optiongroup_names_length`: default is 20,
 - `show_deck_names`: "true" or "false"
-- `show_detailed_card_stats_for_current_card`:  "true" or "false"
+- `card_stats`: "brief" or "detailed"(as the info window from the browser)
 - `thresholds__ivl_mod_color__lower`:  70,
 - `thresholds__ivl_mod_color__upper`:  110,
 - `thresholds__lapse_mod_color__lower`:  30, 

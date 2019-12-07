@@ -24,7 +24,8 @@ def mini_card_stats(card, p, showOD):
         ("Ease", p.c_Ease_str),
     ]
     if showOD:
-        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue))
+        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + '  (' + p.overdue_percent + '%)' ))
+    return make_two_column_table(rows_mini_stats)
     return make_two_column_table(rows_mini_stats)
 
 

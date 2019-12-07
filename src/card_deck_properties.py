@@ -54,6 +54,8 @@ def current_card_deck_properties(card):
     p["c_Deck"] = mw.col.decks.name(card.did)
     p["c_NoteID"] = card.nid
     p["c_CardID"] = card.id
+    p["c_did"] = card.did
+    p["c_ord"] = card.ord
 
     # other useful info
     p["cnt"] = cnt

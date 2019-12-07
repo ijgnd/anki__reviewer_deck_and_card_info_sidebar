@@ -3,7 +3,10 @@ from anki.lang import _
 from aqt import mw
 
 from .card_deck_properties import current_card_deck_properties
-from .cardstats import card_stats_as_in_browser, mini_card_stats
+from .cardstats import (
+    card_stats_as_in_browser,
+    mini_card_stats,
+)
 from .deckoptions import long_deck_options, text_for_short_options
 from .schedulercomparison import text_for_scheduler_comparison
 from .config import gc
@@ -40,7 +43,7 @@ def update_contents_of_sidebar(self):
         if gc('deck_options', "brief") == "long":
             txt += long_deck_options(card, p)
 
-        if gc('show_detailed_card_stats_for_current_card', False):
+        if gc('card_stats') == "detailed":
             txt += card_stats_as_in_browser(card, p)
         else:
             txt += mini_card_stats(card, p, True)

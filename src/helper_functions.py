@@ -76,7 +76,7 @@ def percent_overdue(card):
     overdue = mw.col.sched._daysLate(card)
     ivl = card.ivl
     if ivl > 0:
-        return (overdue+ivl)/ivl
+        return "{0:.2f}".format((overdue+ivl)/ivl*100)
 
 
 def fmt_long_string(name, value):
