@@ -95,6 +95,8 @@ def fmt_int_as_str__maybe_in_critical_color(valueInt, lower, upper):
             return "<div class='critical_color_lower'>{}</div>".format(str(valueInt))
         elif valueInt >= upper:
             return "<div class='critical_color_upper'>{}</div>".format(str(valueInt))
+        else:
+            return str(valueInt)
     else:
         return str(valueInt)
 
