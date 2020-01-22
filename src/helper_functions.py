@@ -77,6 +77,8 @@ def percent_overdue(card):
     ivl = card.ivl
     if ivl > 0:
         return "{0:.2f}".format((overdue+ivl)/ivl*100)
+    else:
+        return "0"
 
 
 def fmt_long_string(name, value):

@@ -24,7 +24,11 @@ def mini_card_stats(card, p, showOD):
         ("Ease", p.c_Ease_str),
     ]
     if showOD:
-        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + '  (' + p.overdue_percent + '%)' ))
+        if p.overdue_percent != "0":
+            pc = '  (' + p.overdue_percent + '%)'
+        else:
+            pc = ""
+        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + pc))
     return make_two_column_table(rows_mini_stats)
 
 
@@ -45,7 +49,11 @@ def mini_card_stats_with_ord(card, p, showOD):
         ("Ease", p.c_Ease_str),
     ]
     if showOD:
-        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + '  (' + p.overdue_percent + '%)' ))
+        if p.overdue_percent != "0":
+            pc = '  (' + p.overdue_percent + '%)'
+        else:
+            pc = ""
+        rows_mini_stats.insert(1, ("Overdue days: ", p.value_for_overdue + pc))
     return make_two_column_table(rows_mini_stats)
 
 
