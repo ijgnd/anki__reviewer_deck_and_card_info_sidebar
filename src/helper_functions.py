@@ -47,33 +47,48 @@ def due_day(card):
 
 def valueForOverdue(card):
     # warrior mode only uses:
-    return mw.col.sched._daysLate(card)
+    # return mw.col.sched._daysLate(card)
+    # doesn't work in filtered deck for me for a card with these properties
 
-    # shorter version of code rom below
-    # if card.queue == 2:
-    #     return mw.col.sched._daysLate(card)
-    # else:
-    #     return ""
+    # pp(card) for card I recently failed from filtered deck (I removed irrelevant parts)
+    # {'data': '', 'did': 000, 'due': 1582139003, 'factor': 2450, 'flags': 0, 'id': 00, 'ivl': 2, 
+    #  'lapses': 1, 'left': 1001, 'mod': 00, 'nid': 000, 'odid': 01, 'odue': 0, 'ord': 0, 
+    #  'queue': 1, 'reps': 3, 'type': 3, 'usn': -1}
 
     # Advanced Browser has overdue_days in  custom_fields.py : Advantage ??
-    # if card.queue == 0 or card.queue == 1 or card.type == 0:
-    #     myvalue = 0
-    # elif card.odue and (card.queue in (2,3) or (type == 2 and card.queue < 0)):
-    #     myvalue = card.odue
-    # elif card.queue in (2,3) or (card.type == 2 and card.queue < 0):
-    #     myvalue = card.due
-    # if myvalue:
-    #     diff = myvalue - mw.col.sched.today
-    #     if diff < 0:
-    #         return diff * -1
-    #     else:
-    #         return ""
-    # else:
-    #     return ""
+    # https://github.com/hssm/advanced-browser/blob/9ffa602171a94e5e06ece9e5959c5ed3f74c0241/advancedbrowser/advancedbrowser/custom_fields.py#L225
+    # not good either because cards in filtered decks can be overdue, too
+        # def valueForOverdue(self, odid, queue, type, due):
+        # if odid or queue == 1:
+        #     return
+        # elif queue == 0 or type == 0:
+        #     return
+        # elif queue in (2,3) or (type == 2 and queue < 0):
+        #     diff = due - mw.col.sched.today
+        #     if diff < 0:
+        #         return diff * -1
+        #     else:
+        #         return
+
+    if card.queue in (0,1) or card.type == 0:
+        myvalue = 0
+    elif card.odue and (card.queue in (2,3) or (type == 2 and card.queue < 0)):
+        myvalue = card.odue
+    elif card.queue in (2,3) or (card.type == 2 and card.queue < 0):
+        myvalue = card.due
+    if myvalue:
+        diff = myvalue - mw.col.sched.today
+        if diff < 0:
+            a = (diff * - 1) - 1
+            return max(0, a)
+        else:
+            return 0
+    else:
+        return 0
 
 
 def percent_overdue(card):
-    overdue = mw.col.sched._daysLate(card)
+    overdue = valueForOverdue(card)
     ivl = card.ivl
     if ivl > 0:
         return "{0:.2f}".format((overdue+ivl)/ivl*100)
