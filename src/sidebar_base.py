@@ -13,6 +13,8 @@ class StatsSidebar(object):
         self.mw = mw
         self.shown = False
         self.night_mode_on = False
+        if mw.pm.night_mode():
+            self.night_mode_on = True
         addHook("showQuestion", lambda: update_contents_of_sidebar(self))
         addHook("deckClosing", self.hide)
         addHook("reviewCleanup", self.hide)
