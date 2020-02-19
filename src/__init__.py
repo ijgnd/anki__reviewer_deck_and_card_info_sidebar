@@ -69,11 +69,15 @@ from aqt import gui_hooks
 from aqt import mw
 from aqt.qt import *
 
+from .config import gc
 from .sidebar_base import StatsSidebar
 
 
 cs = StatsSidebar(mw)
-mw.sidebar673114053visibility = False
+if gc("open on first review after start"):
+    mw.sidebar673114053visibility = True
+else:
+    mw.sidebar673114053visibility = False
 
 
 def maybe_restore_sidebar(new_state, old_state):
