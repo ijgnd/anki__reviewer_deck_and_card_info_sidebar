@@ -1,21 +1,23 @@
-This is an extended modification of the add-on <a href="https://ankiweb.net/shared/info/1008566916" rel="nofollow">Extended Card Stats During Review</a>.
+This is an extended modification of the add-on <a href="https://ankiweb.net/shared/info/1008566916" rel="nofollow">Extended Card Stats During Review</a>. You can show/hide the sidebar with the shortcut "Shift+C" during reviews or from the main window toolbar with Tools-&gt;"Card Stats". In the add-on config you can set if the sidebar is visible by default. The add-on remembers the last state.
 
-I made this for myself because I wanted to have support for the night mode add-on and see different info during review: see deck options, see fewer card info, have a shorter and less wide table of repetitions and have some styling. This version makes it easier to configure what is shown in the sidebar (if you know some python).
+This add-on supports night mode in Anki 2.1.20 (or the night mode add-on for older versions). The sidebar contents are different from the other add-ons. There are deck options, only card properties that are relevant (to me) and a shorter and less wide table of repetitions. This version makes it easier to configure what is shown in the sidebar (if you know some python).
 
+<b># bugs</b>
 If you you run into problems with this add-on you should use glutanimate's original.
+Please do not use reviews for bug reports or support requests. I don't get notified of your reviews, and properly troubleshooting an issue through them is nearly impossible (formatting is limited and I can't reply multiple times). If you find a bug let me know  <a href="https://anki.tenderapp.com/discussions/add-ons/41726-deck-and-card-info-sidebar-during-review-official-thread" rel="nofollow">in the official anki support forum</a>, on <a href="https://github.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/issues" rel="nofollow">github</a> or via reddit (/u/ijgnord).
 
-Use this version at your own risk. Feedback or improvements (concerning my changes) are welcome. It's best to open an issue in <a href="https://github.com/ijgnd/anki20__card_stats_mod/issues" rel="nofollow">my github repo</a>). 
-
-<b>Compatibility to other add-ons</b>
+<b># Compatibility to other add-ons</b>
 This add-on does not work with the add-on <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a> (in 2019-08-07). This limitation also applies to other sidebar add-ons like "Extended Card Stats During Review", see <a href="https://github.com/glutanimate/anki-addons-misc/issues/39" rel="nofollow">this bug report</a>. "<a href="https://github.com/glutanimate/anki-addons-misc/issues/42#issuecomment-484445952" rel="nofollow">the fix will have to be implemented on Progress Bar's side</a>".
 
 Since this add-on is a modification of "Extended Card Stats During Review" which is a modification of "Card Info During Review" they can't be combined. It also doesn't work with the add-on "Warrior Mode - Stats &amp; Debug".
 
-<b>Versions</b>
-- 0.4 2019-08-07 clicking the cid opens the card in the browser
-- 0.3 2019-06-25 night mode (2.1 only), drop support for 2.0
-- 0.2 2019-02-25 refactor
-- 0.1 2018-10-29 initial release
+<b># Versions</b>
+- 2020-02-20 set initial state (configurable) and remember state while Anki is running, support built-in night mode from Anki 2.1.20, better overdue calculation (2.1.20+ only)
+- 2020-01-05 fix missing values in deck options
+- 2019-08-07 clicking the cid opens the card in the browser
+- 2019-06-25 add-on night mode (2.1 only), drop support for 2.0
+- 2019-02-25 refactor
+- 2018-10-29 initial release
 
 <b>Screenshots</b>
 <img src="https://raw.githubusercontent.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/master/screenshots/Deck_and_Card_Info_during_review.png">
