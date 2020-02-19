@@ -65,17 +65,30 @@ STRUCTURE OF THIS ADD-ON
 """
 
 
+from aqt import gui_hooks
 from aqt import mw
 from aqt.qt import *
 
 from .sidebar_base import StatsSidebar
 
 
-_cs = StatsSidebar(mw)
+cs = StatsSidebar(mw)
+mw.sidebar673114053visibility = False
+
+
+def maybe_restore_sidebar(new_state, old_state):
+    if new_state == "review" and mw.sidebar673114053visibility:
+        cs.show()
+gui_hooks.state_did_change.append(maybe_restore_sidebar)
+
+
+# not necessary because of hooks StatsSidebar 
+# def store_sidebar_visibility(new_state, old_state):
+# gui_hooks.state_will_change.append(store_sidebar_visibility)
 
 
 def cardStats(on):
-    _cs.toggle()
+    cs.toggle()
 
 
 action = QAction(mw)
