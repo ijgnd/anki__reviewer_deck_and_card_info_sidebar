@@ -4,7 +4,7 @@ This is a very extended  modification of glutanimates
 This modification adds some info I find interesting and hides other content and
 adds some support for the night mode add-on.
 
-copyright (c) 2018-2019 ijgnd
+copyright (c) 2018- ijgnd
 
 other authors:
 - (c) Ankitects Pty Ltd and contributors
@@ -65,16 +65,10 @@ STRUCTURE OF THIS ADD-ON
 """
 
 
-import pprint
-
 from aqt import mw
 from aqt.qt import *
 
 from .sidebar_base import StatsSidebar
-
-
-def dbg(text):
-    pprint.pprint(text)
 
 
 _cs = StatsSidebar(mw)
