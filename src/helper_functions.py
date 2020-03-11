@@ -79,7 +79,7 @@ def valueForOverdue(card):
     if myvalue:
         diff = myvalue - mw.col.sched.today
         if diff < 0:
-            a = (diff * - 1) - 1
+            a = diff * - 1
             return max(0, a)
         else:
             return 0

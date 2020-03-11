@@ -33,15 +33,13 @@ def current_card_deck_properties(card):
     def date(tm):
         return time.strftime("%Y-%m-%d", time.localtime(tm))
 
-    fmt = lambda x, **kwargs: fmtTimeSpan(x, short=True, **kwargs)
-
     p = dict()
     # Card Stats as seen in Browser
     p["c_Added"] = date(card.id/1000)
     p["c_FirstReview"] = date(first/1000) if first else ""
     p["c_LatestReview"] = date(last/1000) if last else ""
     p["c_Due"] = due_day(card)
-    p["c_Interval"] = fmt(card.ivl * 86400) if card.queue == 2 else ""
+    p["c_Interval"] = fmtTimeSpan(card.ivl * 86400, short=True) if card.queue == 2 else ""
     p["c_Ease"] = "%d%%" % (card.factor/10.0)
     p["c_Ease_str"] = str("%d%%" % (card.factor/10.0))
     p["c_Reviews"] = "%d" % card.reps
