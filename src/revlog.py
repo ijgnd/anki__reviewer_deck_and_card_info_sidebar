@@ -2,11 +2,12 @@ import time
 
 import anki.stats as ankistats
 from anki.lang import _
+from anki.rsbackend import FormatTimeSpanContext
+
 from aqt import mw
 
 from .config import gc
 from .helper_functions import (
-    formatIvlString,
     make_multi_column_table_first_row_bold
 )
 
@@ -60,12 +61,19 @@ def revlogData_mod(self, card, limit):
             ease = fmt % ("color_ease4", ease)
 
         int_due = "na"
+
         if ivl > 0:
             int_due_date = time.localtime(date + (ivl * 24 * 60 * 60))
             int_due = time.strftime(_("%Y-%m-%d"), int_due_date)
 
-        ivl = formatIvlString(ivl)
-
+        # https://github.com/ankitects/anki/blob/394f7c630cd8b951d17171030c0859e092c03d41/qt/aqt/browser.py#L1489
+        if ivl == 0:
+            ivl = ""
+        else:
+            if ivl > 0:
+                ivl *= 86_400
+            ivl = mw.col.backend.format_time_span(abs(ivl), context=FormatTimeSpanContext.PRECISE)
+        
         row_n = [[time.strftime("<b>%Y-%m-%d</b>@%H:%M", time.localtime(date)), "left"],
                     [tstr, "right"],
                     [ease, "right"],
@@ -74,7 +82,7 @@ def revlogData_mod(self, card, limit):
                     [int(factor / 10) if factor else "", "right"],
                     ]
         if not gc('hide_time_column_from_revlog', False):
-            row_n.append([formatIvlString(taken), "right"])
+            row_n.append([mw.col.backend.format_time_span(taken), "right"])
         list_of_rows.append(list(row_n))  # copy list
 
     # show_info_length_of_sublists(list_of_rows)

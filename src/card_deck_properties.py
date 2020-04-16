@@ -2,9 +2,8 @@ import time
 from types import SimpleNamespace
 
 from aqt import mw
-from anki.utils import fmtTimeSpan
 
-from .helper_functions import due_day, stattime, valueForOverdue, percent_overdue, fmt_long_string
+from .helper_functions import due_day, valueForOverdue, percent_overdue, fmt_long_string
 from .config import gc
 
 
@@ -18,7 +17,8 @@ def current_card_deck_properties(card):
 
     formatted_steps = ''
     for i in conf['new']['delays']:
-        formatted_steps += ' -- ' + fmtTimeSpan(i * 60, short=True)
+        formatted_steps += ' -- ' + mw.col.backend.format_time_span(i * 60)
+
 
     #############
     # from anki.stats.py
@@ -39,13 +39,13 @@ def current_card_deck_properties(card):
     p["c_FirstReview"] = date(first/1000) if first else ""
     p["c_LatestReview"] = date(last/1000) if last else ""
     p["c_Due"] = due_day(card)
-    p["c_Interval"] = fmtTimeSpan(card.ivl * 86400, short=True) if card.queue == 2 else ""
+    p["c_Interval"] = mw.col.backend.format_time_span(card.ivl * 86400) if card.queue == 2 else ""
     p["c_Ease"] = "%d%%" % (card.factor/10.0)
     p["c_Ease_str"] = str("%d%%" % (card.factor/10.0))
     p["c_Reviews"] = "%d" % card.reps
     p["c_Lapses"] = "%d" % card.lapses
-    p["c_AverageTime"] = stattime(total / float(cnt)) if cnt else ""
-    p["c_TotalTime"] = stattime(total) if cnt else ""
+    p["c_AverageTime"] = mw.col.backend.format_time_span(total / float(cnt)) if cnt else ""
+    p["c_TotalTime"] = mw.col.backend.format_time_span(total) if cnt else ""
     p["c_Position"] = card.due if card.queue == 0 else ""
     p["c_CardType"] = card.template()['name']
     p["c_NoteType"] = card.model()['name']

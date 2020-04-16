@@ -4,7 +4,6 @@ import time
 from collections import OrderedDict
 
 from aqt import mw
-from anki.utils import fmtTimeSpan
 from aqt.utils import showInfo
 
 from .config import gc
@@ -169,26 +168,6 @@ def deck_name_and_source_for_filtered(card, p):
         else:
             rows.append(("Source Deck", p.source_deck_name))
     return make_two_column_table(rows)
-
-
-# function time from anki/stats.py
-def stattime(tm):
-    str = ""
-    if tm >= 60:
-        str = fmtTimeSpan((tm / 60)*60, short=True, point=-1, unit=1)
-    if tm % 60 != 0 or not str:
-        str += fmtTimeSpan(tm % 60, point=2 if not str else -1, short=True)
-    return str
-
-
-# from warrior-mode
-def formatIvlString(ivl):
-    if ivl == 0:
-        return "0d"
-    elif ivl > 0:
-        return fmtTimeSpan(ivl * 86400, short=True)
-    else:
-        return stattime(-ivl)
 
 
 # for debugging
