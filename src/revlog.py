@@ -72,7 +72,7 @@ def revlogData_mod(self, card, limit):
         else:
             if ivl > 0:
                 ivl *= 86_400
-            ivl = mw.col.backend.format_time_span(abs(ivl), context=FormatTimeSpanContext.PRECISE)
+            ivl = mw.col.backend.format_time_span(abs(ivl), context=FormatTimeSpanContext.ANSWER_BUTTONS)
         
         row_n = [[time.strftime("<b>%Y-%m-%d</b>@%H:%M", time.localtime(date)), "left"],
                     [tstr, "right"],
