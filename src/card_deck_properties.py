@@ -23,8 +23,7 @@ def current_card_deck_properties(card):
     #############
     # from anki.stats.py
     (cnt, total) = mw.col.db.first(
-            "select count(), sum(time)/1000 from revlog where cid = :id",
-            id=card.id)
+        "select count(), sum(time)/1000 from revlog where cid = ?", card.id)
     first = mw.col.db.scalar(
         "select min(id) from revlog where cid = ?", card.id)
     last = mw.col.db.scalar(
