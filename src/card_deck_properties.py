@@ -97,8 +97,8 @@ def current_card_deck_properties(card):
     p["d_rev_IntMod_str"] = str(int(100 * conf['rev']['ivlFct']))
     p["d_rev_MaxIvl"] = conf['rev']['maxIvl']
     p["d_rev_BurySiblings"] = conf['rev']['bury']
-    p["d_rev_minSpace"] = conf['rev']["minSpace"]  # unused
-    p["d_rev_fuzz"] = conf['rev']["fuzz"]     # unused
+    # p["d_rev_minSpace"] = conf['rev']["minSpace"]  # unused
+    # p["d_rev_fuzz"] = conf['rev']["fuzz"]     # unused
     p["d_lapse_steps"] = conf['lapse']['delays']
     p["d_lapse_steps_str"] = str(conf['lapse']['delays'])
     p["d_lapse_NewIvl_int"] = int(100 * conf['lapse']['mult'])
