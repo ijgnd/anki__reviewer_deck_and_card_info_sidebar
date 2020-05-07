@@ -90,7 +90,7 @@ def current_card_deck_properties(card):
     p["d_new_EasyIvl"] = str(conf['new']['ints'][1])
     p["d_new_StartingEase"] = conf['new']['initialFactor'] / 10
     p["d_new_BurySiblings"] = conf['new']['bury']
-    p["d_new_sep"] = conf['new']["separate"]  # unused
+    # p["d_new_sep"] = conf['new']["separate"]  # unused
     p["d_rev_perDay"] = conf['rev']['perDay']
     p["d_rev_easybonus"] = str(int(100 * conf['rev']['ease4']))
     p["d_rev_IntMod_int"] = int(100 * conf['rev']['ivlFct'])
