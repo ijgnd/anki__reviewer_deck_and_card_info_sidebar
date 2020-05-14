@@ -27,7 +27,7 @@ def revlogData_mod(self, card, limit):
             ["T", "right"],
             ["R", "right"],
             ["Ivl", "right"],
-            ["dueDate", "right"],
+            # ["dueDate", "right"],
             ["Ease", "right"],
             ]
     if not gc('hide_time_column_from_revlog', False):
@@ -85,7 +85,7 @@ def revlogData_mod(self, card, limit):
                     [tstr, "right"],
                     [ease, "right"],
                     [ivl, "right"],
-                    [int_due, "right"],
+                    # [int_due, "right"],
                     [int(factor / 10) if factor else "", "right"],
                     ]
         if not gc('hide_time_column_from_revlog', False):
