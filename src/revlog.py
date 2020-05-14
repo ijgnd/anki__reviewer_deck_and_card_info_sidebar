@@ -78,7 +78,9 @@ def revlogData_mod(self, card, limit):
             #         return self.col.backend.format_time_span(
             #             tm, context=FormatTimeSpanContext.PRECISE
             #         )
-            context = FormatTimeSpanContext.PRECISE  # ANSWER_BUTTONS
+            
+            # PRECISE: 1.23 months vs. ANSWER_BUTTONS ⁨1.2⁩mo
+            context = FormatTimeSpanContext.ANSWER_BUTTONS  # PRECISE
             ivl = mw.col.backend.format_time_span(abs(ivl), context=context)
 
         row_n = [[time.strftime("<b>%Y-%m-%d</b>@%H:%M", time.localtime(date)), "left"],
