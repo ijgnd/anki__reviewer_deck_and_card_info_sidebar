@@ -27,7 +27,7 @@ def revlogData_mod(self, card, limit):
             ["T", "right"],
             ["R", "right"],
             ["Ivl", "right"],
-            ["IntDate", "right"],
+            ["dueDate", "right"],
             ["Ease", "right"],
             ]
     if not gc('hide_time_column_from_revlog', False):
