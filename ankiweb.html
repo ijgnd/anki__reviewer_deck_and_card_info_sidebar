@@ -2,16 +2,44 @@ This is an extended modification of the add-on <a href="https://ankiweb.net/shar
 
 This add-on supports night mode in Anki 2.1.20 (or the night mode add-on for older versions). The sidebar contents are different from the other add-ons. There are deck options, only card properties that are relevant (to me) and a shorter and less wide table of repetitions. This version makes it easier to configure what is shown in the sidebar (if you know some python).
 
-<b># bugs</b>
-If you you run into problems with this add-on you should use glutanimate's original.
-Please do not use reviews for bug reports or support requests. I don't get notified of your reviews, and properly troubleshooting an issue through them is nearly impossible (formatting is limited and I can't reply multiple times). If you find a bug let me know  <a href="https://anki.tenderapp.com/discussions/add-ons/41726-deck-and-card-info-sidebar-during-review-official-thread" rel="nofollow">in the official anki support forum</a>, on <a href="https://github.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/issues" rel="nofollow">github</a> or via reddit (/u/ijgnord).
-
 <b># Compatibility to other add-ons</b>
-This add-on does not work with the add-on <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a> (in 2019-08-07). This limitation also applies to other sidebar add-ons like "Extended Card Stats During Review", see <a href="https://github.com/glutanimate/anki-addons-misc/issues/39" rel="nofollow">this bug report</a>. "<a href="https://github.com/glutanimate/anki-addons-misc/issues/42#issuecomment-484445952" rel="nofollow">the fix will have to be implemented on Progress Bar's side</a>".
+This add-on does not work with the add-on <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a> (in 2020-06-08). This limitation also applies to other sidebar add-ons like "Extended Card Stats During Review", see <a href="https://github.com/glutanimate/anki-addons-misc/issues/39" rel="nofollow">this bug report</a>. "<a href="https://github.com/glutanimate/anki-addons-misc/issues/42#issuecomment-484445952" rel="nofollow">the fix will have to be implemented on Progress Bar's side</a>". Since this add-on is a modification of "Extended Card Stats During Review" which is a modification of "Card Info During Review" they can't be combined. It also doesn't work with the add-on "Warrior Mode - Stats &amp; Debug".
 
-Since this add-on is a modification of "Extended Card Stats During Review" which is a modification of "Card Info During Review" they can't be combined. It also doesn't work with the add-on "Warrior Mode - Stats &amp; Debug".
+<b>Screenshots</b>
+<img src="https://raw.githubusercontent.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/master/screenshots/Deck_and_Card_Info_during_review.png">
+
+<img src="https://raw.githubusercontent.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/master/screenshots/Deck_and_Card_Info_during_review_nightmode.png">
+
+
+<b># Meaning of abbreviations used</b>
+The add-on uses abbreviations in the sidebar so that the sidebar can be more compact.
+
+On top for the deck options there is:
+- "OptGr": Name of the option group
+- "Steps": Steps ("New Cards" tab of deck options)
+- "LSteps": Steps ("Lapses" tab of deck options)
+- "GrIv": Graduating Interval ("New Cards" tab of deck options)
+- "EaIv": Easy Interval ("New Cards" tab of deck options)
+- "EaBo": Easy Bonus ("Reviews" tab of deck options)
+- "IvMo": Interval Modifier ("Reviews" tab of deck options)
+- "LpIv": New interval ("Lapses" tab of deck options)
+
+Then you have "Ivl" for "Interval" and "cid" which stands for "card id". the "card id" stores the
+creation time of card in a special format (epoch/unix time in milliseconds).
+
+The columns in the revision table have the following meaning:
+- "Date": the last time you rated the card
+- "T" refers to the state of the card: Learned ("Lrn"), Review ("Rev"), Relearned ("ReLn"), Filtered ("Filt"), Defered/Rescheduled ("Resch")
+- "R" means how you rated it: "1" means again, "2" means hard, "3" is good, "4" is easy (if you the v2 scheduler)
+- "Ivl" is the interval
+- "Ease" means the ease(ivlfct) property of the card: It's the approximate amount the interval will grow when you answer a review card with the “Good” button, see <a href="https://docs.ankiweb.net/#/stats?id=card-info" rel="nofollow">the manual</a>.
 
 <b># Versions</b>
+- 2020-06-08 explain abbreviations in config_md
+- 2020-06-06 fix #6
+- 2020-05-05 update for 2.1.24+: "named arguments in queries will go away in the future"
+- 2020-04-16 update for 2.1.22+: fmtTimeSpan -&gt; mw.col.backend.format_time_span
+- 2020-03-22 revert overdue calculation
 - 2020-02-20 set initial state (configurable) and remember state while Anki is running, support built-in night mode from Anki 2.1.20, better overdue calculation (2.1.20+ only)
 - 2020-01-05 fix missing values in deck options
 - 2019-08-07 clicking the cid opens the card in the browser
@@ -19,10 +47,9 @@ Since this add-on is a modification of "Extended Card Stats During Review" which
 - 2019-02-25 refactor
 - 2018-10-29 initial release
 
-<b>Screenshots</b>
-<img src="https://raw.githubusercontent.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/master/screenshots/Deck_and_Card_Info_during_review.png">
-
-<img src="https://raw.githubusercontent.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/master/screenshots/Deck_and_Card_Info_during_review_nightmode.png">
+<b># bugs</b>
+If you you run into problems with this add-on you should use glutanimate's original.
+Please do not use reviews for bug reports or support requests. I don't get notified of your reviews, and properly troubleshooting an issue through them is nearly impossible (formatting is limited and I can't reply multiple times). If you find a bug let me know  <a href="https://anki.tenderapp.com/discussions/add-ons/41726-deck-and-card-info-sidebar-during-review-official-thread" rel="nofollow">in the official anki support forum</a>, on <a href="https://github.com/ijgnd/anki__reviewer_deck_and_card_info_sidebar/issues" rel="nofollow">github</a> or via reddit (/u/ijgnord).
 
 <b>Other Authors</b>
 - (c) Ankitects Pty Ltd and contributors
