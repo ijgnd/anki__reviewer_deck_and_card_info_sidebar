@@ -34,7 +34,7 @@ def update_contents_of_sidebar(self):
 
         txt += _("<h3>Current Card</h3>")
 
-        if gc('try_to_show_origvmod_scheduler', False):
+        if gc('try_to_show_origvmod_scheduler'):
             # txt += _('<h4>Scheduler Comparison</h4>')
             txt += text_for_scheduler_comparison(card, p)
             txt += "<hr>"
@@ -63,7 +63,7 @@ def update_contents_of_sidebar(self):
     if lc:
         txt += "<hr>"
         txt += _("<h3>Last Card</h3>")
-        if gc('show_detailed_card_stats_for_current_card', False):
+        if gc('show_detailed_card_stats_for_current_card'):
             txt += self.mw.col.cardStats(lc)
         else:
             lp = current_card_deck_properties(lc)
