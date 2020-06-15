@@ -1,5 +1,6 @@
 ### Config Options
 
+- `card_stats`: "brief" or "detailed"(as the info window from the browser)
 - `deck_names_length`: default is 40, if a string is longer it's split up over multiple lines
 - `deck_options`: "brief" or "long"
 - `hide_time_column_from_revlog`: "true" or "false"
@@ -7,13 +8,12 @@
 - `num_of_revs`:  default is 3,  how many prior reviews should be shown in table for current and prior card
 - `optiongroup_names_length`: default is 20,
 - `show_deck_names`: "true" or "false"
-- `card_stats`: "brief" or "detailed"(as the info window from the browser)
+- `show total cards studied today`: "true" or "false", refers to the whole collection. you can't limit this to the current deck
 - `thresholds__ivl_mod_color__lower`:  70,
 - `thresholds__ivl_mod_color__upper`:  110,
 - `thresholds__lapse_mod_color__lower`:  30, 
 - `thresholds__lapse_mod_color__upper`:  70 
 - `try_to_show_origvmod_scheduler`:  "true" or "false"
-- `show total cards studied today`: "true" or "false", refers to the whole collection. you can't limit this to the current deck
 
 ### Meaning of abbreviations used
 
