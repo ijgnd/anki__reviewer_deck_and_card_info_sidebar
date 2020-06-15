@@ -24,6 +24,11 @@ def update_contents_of_sidebar(self):
     txt = ""
     card = self.mw.reviewer.card
     if card:
+        cutoff = (mw.col.sched.dayCutoff - 86400) * 1000
+        sqlstring = f"select count(id) from revlog where id > {cutoff}"
+        total_today = mw.col.db.first(sqlstring)[0]
+        txt += f'<div style="font-size:85%; text-align:left;"><b>{total_today}</b> cards studied today.</div>'
+
         p = current_card_deck_properties(card)
 
         txt += _("<h3>Current Card</h3>")
