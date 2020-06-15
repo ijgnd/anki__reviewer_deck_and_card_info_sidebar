@@ -13,6 +13,7 @@
 - `thresholds__lapse_mod_color__lower`:  30, 
 - `thresholds__lapse_mod_color__upper`:  70 
 - `try_to_show_origvmod_scheduler`:  "true" or "false"
+- `show total cards studied today`: "true" or "false", refers to the whole collection. you can't limit this to the current deck
 
 ### Meaning of abbreviations used
 

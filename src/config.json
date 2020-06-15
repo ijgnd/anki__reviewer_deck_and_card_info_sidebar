@@ -7,6 +7,7 @@
     "num_of_revs": 3,
     "optiongroup_names_length": 20,
     "show_deck_names": true,
+    "show total cards studied today": true,
     "thresholds__ivl_mod_color__lower": 70,
     "thresholds__ivl_mod_color__upper": 110,
     "thresholds__lapse_mod_color__lower": 30,
