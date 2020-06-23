@@ -82,9 +82,6 @@ class StatsSidebar(object):
         if self.shown:
             self._remDockable(self.shown)
             self.shown = None
-            mw.sidebar673114053visibility = True
-        else:
-            mw.sidebar673114053visibility = False
 
     def toggle(self):
         if self.shown:

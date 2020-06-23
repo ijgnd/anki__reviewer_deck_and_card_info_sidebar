@@ -9,7 +9,7 @@ copyright (c) 2018- ijgnd
 other authors:
 - (c) Ankitects Pty Ltd and contributors
 - (c) Glutanimate 2015-2018
-- (c) Lovac42 2018
+- (c) Lovac42 2018-
 - (c) Steve AW 2013
 - (c) hssm
 
@@ -64,40 +64,69 @@ STRUCTURE OF THIS ADD-ON
     output from cardstats.py, deckoptions.py, revlog.py, schedulercomparison.py
 """
 
-
-from aqt import gui_hooks
+from aqt.gui_hooks import (
+    profile_did_open,
+    profile_will_close,
+    state_did_change,
+)
 from aqt import mw
-from aqt.qt import *
+from aqt.qt import (
+    QAction,
+    QKeySequence,
+)
 
 from .config import gc
 from .sidebar_base import StatsSidebar
+from .toolbar import getMenu
 
 
 cs = StatsSidebar(mw)
+
+
+
 if gc("open on first review after start"):
-    mw.sidebar673114053visibility = True
+    sidebar_visibility = True
 else:
-    mw.sidebar673114053visibility = False
+    sidebar_visibility = False
 
 
 def maybe_restore_sidebar(new_state, old_state):
-    if new_state == "review" and mw.sidebar673114053visibility:
+    if new_state == "review" and sidebar_visibility:
         cs.show()
-gui_hooks.state_did_change.append(maybe_restore_sidebar)
+state_did_change.append(maybe_restore_sidebar)
 
 
-# not necessary because of hooks StatsSidebar 
+# not necessary because of hooks StatsSidebar
 # def store_sidebar_visibility(new_state, old_state):
 # gui_hooks.state_will_change.append(store_sidebar_visibility)
 
 
 def cardStats(on):
+    global sidebar_visibility
     cs.toggle()
+    sidebar_visibility ^= True
 
 
-action = QAction(mw)
-action.setText("Card Stats")
-action.setCheckable(True)
-action.setShortcut(QKeySequence("Shift+C"))
-mw.form.menuTools.addAction(action)
-action.toggled.connect(cardStats)
+alreadyrun = False
+def mainSetupMenus():
+    global alreadyrun
+    if alreadyrun:
+        return
+    alreadyrun = True
+
+    view = getMenu(mw, "&View")
+
+    action = QAction(mw)
+    action.setText("Card Stats")
+    action.setCheckable(True)
+    action.setChecked(sidebar_visibility)
+    action.setShortcut(QKeySequence("Shift+C"))
+    view.addAction(action)
+    action.toggled.connect(cardStats)
+profile_did_open.append(mainSetupMenus)
+
+
+def hideSidebar():
+    global sidebar_visibility
+    cs.hide()
+profile_will_close.append(hideSidebar)
