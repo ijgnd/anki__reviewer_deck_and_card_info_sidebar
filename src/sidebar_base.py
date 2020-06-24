@@ -1,6 +1,11 @@
 import aqt 
 from aqt import mw
-from aqt.qt import *
+from aqt.qt import (
+    QDockWidget,
+    QSize,
+    Qt,
+    pyqtSignal,
+)
 from anki.hooks import addHook
 from aqt.webview import AnkiWebView
 from anki.lang import _
