@@ -10,7 +10,28 @@ from anki.hooks import addHook
 from aqt.webview import AnkiWebView
 from anki.lang import _
 
+from .config import gc
 from .sidebar_set_contents import update_contents_of_sidebar
+
+
+class ThinAnkiWebView(AnkiWebView):
+    def __init__(self, sidebar):
+        AnkiWebView.__init__(self, None)
+        self.sidebar = sidebar
+    def sizeHint(self):
+        return QSize(gc("default width", 200), 100)
+    # def contextMenuEvent(self, evt):
+    #     m = QMenu(self)
+    #     a = m.addAction(_("Toggle Dark Mode"))
+    #     a.triggered.connect(self.sidebar.onDarkMode)
+    #     m.popup(QCursor.pos())
+
+
+class DockableWithClose(QDockWidget):
+    closed = pyqtSignal()
+    def closeEvent(self, evt):
+        self.closed.emit()
+        QDockWidget.closeEvent(self, evt)
 
 
 class StatsSidebar(object):
@@ -34,11 +55,6 @@ class StatsSidebar(object):
             self.show()
         
     def _addDockable(self, title, w):
-        class DockableWithClose(QDockWidget):
-            closed = pyqtSignal()
-            def closeEvent(self, evt):
-                self.closed.emit()
-                QDockWidget.closeEvent(self, evt)
         dock = DockableWithClose(title, self.mw)
         dock.setObjectName(title)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -66,17 +82,6 @@ class StatsSidebar(object):
 
     def show(self):
         if not self.shown:
-            class ThinAnkiWebView(AnkiWebView):
-                def __init__(self, sidebar):
-                    AnkiWebView.__init__(self, None)
-                    self.sidebar = sidebar
-                def sizeHint(self):
-                    return QSize(200, 100)
-                # def contextMenuEvent(self, evt):
-                #     m = QMenu(self)
-                #     a = m.addAction(_("Toggle Dark Mode"))
-                #     a.triggered.connect(self.sidebar.onDarkMode)
-                #     m.popup(QCursor.pos())
             self.web = ThinAnkiWebView(self)
             self.shown = self._addDockable("", self.web)
             self.shown.closed.connect(self._onClosed)

@@ -2,9 +2,11 @@
     "card_stats": "brief",
     "deck_options": "brief",
     "deck_names_length": 40,
+    "default width": 400,
     "hide_time_column_from_revlog": true,
     "highlight_colors": true,
     "num_of_revs": 3,
+    "open on first review after start": true,
     "optiongroup_names_length": 20,
     "show_deck_names": true,
     "show total cards studied today": true,
@@ -12,6 +14,6 @@
     "thresholds__ivl_mod_color__upper": 110,
     "thresholds__lapse_mod_color__lower": 30,
     "thresholds__lapse_mod_color__upper": 70,
-    "try_to_show_origvmod_scheduler": true,
-    "open on first review after start": true 
+    "thresholds__lapse_counter_for_card": 10,
+    "try_to_show_origvmod_scheduler": true
 }
