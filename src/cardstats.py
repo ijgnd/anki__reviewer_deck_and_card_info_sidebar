@@ -1,7 +1,10 @@
 from aqt import mw
 
 from .config import gc
-from .helper_functions import make_two_column_table
+from .helper_functions import (
+    fmt_as_str__maybe_in_critical_color,
+    make_two_column_table,
+)
 
 
 def mini_card_stats(card, p, showOD):
@@ -15,13 +18,17 @@ def mini_card_stats(card, p, showOD):
     right_column = p.card_ivl_str + ' (scheduled)'
     clickable_cid = '''<a href=# onclick="return pycmd('%s')">%s</a>''' %(
         "BrowserSearch#" + str(p.c_CardID), str(p.c_CardID))
+
+    t = gc("thresholds__lapse_counter_for_card", 10)
+    thresh_col = fmt_as_str__maybe_in_critical_color(p.c_Lapses, -1, t, usespan=True, invert=True)
+
     rows_mini_stats = [
         ("Ivl", right_column),
         # ("sched Ivl",p.card_ivl_str),
         # ("actual Ivl",p.card_ivl_str),
         ("Due day", p.dueday),
         ("cid/card created", clickable_cid + '&nbsp;&nbsp;--&nbsp;&nbsp;' + p.now),
-        ("Ease", p.c_Ease_str),
+        ("Ease/Lapses", p.c_Ease_str + " / " + thresh_col),
     ]
     if showOD:
         if p.overdue_percent != "0":

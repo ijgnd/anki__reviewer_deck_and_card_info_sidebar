@@ -1,6 +1,6 @@
 from .config import gc
 from .helper_functions import (
-    fmt_int_as_str__maybe_in_critical_color,
+    fmt_as_str__maybe_in_critical_color,
     make_two_column_table,
     make_multi_column_table_first_row_bold
 )
@@ -10,9 +10,9 @@ mod_lower = gc('thresholds__ivl_mod_color__lower', 70)
 mod_upper = gc('thresholds__ivl_mod_color__upper', 110)
 lapse_lower = gc('thresholds__lapse_mod_color__lower', 30)
 lapse_upper = gc('thresholds__lapse_mod_color__upper', 70)
-im_colored = lambda p: fmt_int_as_str__maybe_in_critical_color(
+im_colored = lambda p: fmt_as_str__maybe_in_critical_color(
     p.d_rev_IntMod_int, mod_lower, mod_upper)
-lapse_colored = lambda p: fmt_int_as_str__maybe_in_critical_color(
+lapse_colored = lambda p: fmt_as_str__maybe_in_critical_color(
     p.d_lapse_NewIvl_int, lapse_lower, lapse_upper)
 
 

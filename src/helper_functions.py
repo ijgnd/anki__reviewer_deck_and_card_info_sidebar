@@ -105,16 +105,21 @@ def fmt_long_string(name, value):
     return out.rstrip('\n')
 
 
-def fmt_int_as_str__maybe_in_critical_color(valueInt, lower, upper):
+def fmt_as_str__maybe_in_critical_color(value, lower, upper, usespan=False, invert=False):
+    valueInt = int(value)
+    valueStr = str(value)
+    tag = "span" if usespan else "div"
+    lowclass = "critical_color_upper" if invert else "critical_color_lower"
+    highclass = "critical_color_lower" if invert else "critical_color_upper"
     if gc('highlight_colors', False):
         if valueInt <= lower:
-            return "<div class='critical_color_lower'>{}</div>".format(str(valueInt))
+            return f"<{tag} class='{lowclass}'>{valueStr}</{tag}>"
         elif valueInt >= upper:
-            return "<div class='critical_color_upper'>{}</div>".format(str(valueInt))
+            return f"<{tag} class='{highclass}'>{valueStr}</{tag}>"
         else:
-            return str(valueInt)
+            return valueStr
     else:
-        return str(valueInt)
+        return valueStr
 
 
 def make_two_column_table(d):
