@@ -1,7 +1,9 @@
 from aqt import mw
 from anki.rsbackend import FormatTimeSpanContext
 
-from .helper_functions import make_multi_column_table_first_row_bold
+from .helper_functions import (
+    make_multi_column_table_first_row_bold,
+)
 
 
 def v1(card, p):

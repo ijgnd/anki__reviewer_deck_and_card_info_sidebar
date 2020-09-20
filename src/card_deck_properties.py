@@ -3,7 +3,12 @@ from types import SimpleNamespace
 
 from aqt import mw
 
-from .helper_functions import due_day, valueForOverdue, percent_overdue, fmt_long_string
+from .helper_functions import (
+    due_day,
+    fmt_long_string,
+    percent_overdue,
+    valueForOverdue,
+)
 from .config import gc
 
 
