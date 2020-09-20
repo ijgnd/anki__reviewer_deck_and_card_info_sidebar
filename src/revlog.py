@@ -8,7 +8,8 @@ from aqt import mw
 
 from .config import gc
 from .helper_functions import (
-    make_multi_column_table_first_row_bold
+    make_multi_column_table_first_row_bold,
+    timespan,
 )
 
 
@@ -81,7 +82,7 @@ def revlogData_mod(self, card, limit):
             
             # PRECISE: 1.23 months vs. ANSWER_BUTTONS ⁨1.2⁩mo
             context = FormatTimeSpanContext.ANSWER_BUTTONS  # PRECISE
-            ivl = mw.col.backend.format_time_span(abs(ivl), context=context)
+            ivl = timespan(abs(ivl), context=context)
 
         row_n = [[time.strftime("<b>%Y-%m-%d</b>@%H:%M", time.localtime(date)), "left"],
                     [tstr, "right"],
@@ -91,7 +92,7 @@ def revlogData_mod(self, card, limit):
                     [int(factor / 10) if factor else "", "right"],
                     ]
         if not gc('hide_time_column_from_revlog', False):
-            row_n.append([mw.col.backend.format_time_span(taken), "right"])
+            row_n.append([timespan(taken), "right"])
         list_of_rows.append(list(row_n))  # copy list
 
     # show_info_length_of_sublists(list_of_rows)

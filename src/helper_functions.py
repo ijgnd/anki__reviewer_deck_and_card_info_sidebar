@@ -3,6 +3,7 @@ import io
 import time
 from collections import OrderedDict
 
+from anki.utils import pointVersion
 from aqt import mw
 from aqt.utils import showInfo
 
@@ -194,3 +195,11 @@ def sidebar_style(file):
     with io.open(csspath, encoding="utf-8") as f:
         mystyle = f.read()
     return mystyle + " td { font-size: 80%; }"
+
+
+def timespan(t):
+    """for change from https://github.com/ankitects/anki/commit/89dde3aeb0c1f94b912b3cb2659ec0d4bffb4a1c"""
+    if pointVersion() < 28:
+        return mw.col.backend.format_time_span(t)
+    else:
+        return mw.col.format_timespan(t)
