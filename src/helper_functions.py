@@ -3,9 +3,11 @@ import io
 import time
 from collections import OrderedDict
 
+from anki.rsbackend import FormatTimeSpanContext
 from anki.utils import pointVersion
 from aqt import mw
 from aqt.utils import showInfo
+
 
 from .config import gc
 
@@ -197,9 +199,9 @@ def sidebar_style(file):
     return mystyle + " td { font-size: 80%; }"
 
 
-def timespan(t):
+def timespan(t, context = FormatTimeSpanContext.INTERVALS):
     """for change from https://github.com/ankitects/anki/commit/89dde3aeb0c1f94b912b3cb2659ec0d4bffb4a1c"""
     if pointVersion() < 28:
-        return mw.col.backend.format_time_span(t)
+        return mw.col.backend.format_time_span(t, context)
     else:
-        return mw.col.format_timespan(t)
+        return mw.col.format_timespan(t, context)
