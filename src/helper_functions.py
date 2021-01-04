@@ -72,6 +72,7 @@ def valueForOverdue(card):
         #     else:
         #         return
 
+    myvalue = 0
     if card.queue in (0,1) or card.type == 0:
         myvalue = 0
     elif card.odue and (card.queue in (2,3) or (type == 2 and card.queue < 0)):
