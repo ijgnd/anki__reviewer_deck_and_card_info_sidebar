@@ -59,7 +59,10 @@ def update_contents_of_sidebar(self):
         txt += "<p>"
         txt += revlogData_mod(self, card, gc('num_of_revs', 3))
 
-    lc = self.mw.reviewer.lastCard()
+    try:
+        lc = self.mw.reviewer.lastCard()
+    except:
+        lc = None
     if lc:
         txt += "<hr>"
         txt += _("<h3>Last Card</h3>")
