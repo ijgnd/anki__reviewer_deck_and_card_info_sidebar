@@ -1,7 +1,6 @@
 import time
 
 import anki.stats as ankistats
-from anki.lang import _
 from anki.rsbackend import FormatTimeSpanContext
 
 from aqt import mw
@@ -37,7 +36,7 @@ def revlogData_mod(self, card, limit):
 
     limitentries = list(reversed(entries))[:limit]
     for (date, ease, ivl, factor, taken, type) in limitentries:
-        tstr = [_("Lrn"), _("Rev"), _("ReLn"), _("Filt"), _("Resch")][type]
+        tstr = ["Lrn", "Rev", "ReLn", "Filt", "Resch"][type]
             # Learned, Review, Relearned, Filtered, Defered (Rescheduled)
         
         # COLORIZE LOG TYPE
@@ -65,7 +64,7 @@ def revlogData_mod(self, card, limit):
 
         if ivl > 0:
             int_due_date = time.localtime(date + (ivl * 24 * 60 * 60))
-            int_due = time.strftime(_("%Y-%m-%d"), int_due_date)
+            int_due = time.strftime("%Y-%m-%d", int_due_date)
 
         # https://github.com/ankitects/anki/blob/394f7c630cd8b951d17171030c0859e092c03d41/qt/aqt/browser.py#L1489
         if ivl == 0:

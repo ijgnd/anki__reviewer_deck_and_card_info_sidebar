@@ -26,7 +26,7 @@ from .config import gc
 #             next = c.due
 #         next = self.date(next)
 #     if next:
-#         self.addLine(_("Due"), next)
+#         self.addLine("Due", next)
 
 
 def due_day(card):

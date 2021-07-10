@@ -1,5 +1,4 @@
 from anki.stats import CardStats
-from anki.lang import _
 from aqt import mw
 
 from .card_deck_properties import current_card_deck_properties
@@ -32,14 +31,14 @@ def update_contents_of_sidebar(self):
 
         p = current_card_deck_properties(card)
 
-        txt += _("<h3>Current Card</h3>")
+        txt += "<h3>Current Card</h3>"
 
         if gc('try_to_show_origvmod_scheduler'):
-            # txt += _('<h4>Scheduler Comparison</h4>')
+            # txt += '<h4>Scheduler Comparison</h4>'
             txt += text_for_scheduler_comparison(card, p)
             txt += "<hr>"
 
-        # txt += _("<h4>Deck Options</h4>")
+        # txt += "<h4>Deck Options</h4>"
         if gc('deck_options', "brief") == "brief":
             txt += text_for_short_options(card, p)
             txt += "<hr>"
@@ -65,7 +64,7 @@ def update_contents_of_sidebar(self):
         lc = None
     if lc:
         txt += "<hr>"
-        txt += _("<h3>Last Card</h3>")
+        txt += "<h3>Last Card</h3>"
         if gc('show_detailed_card_stats_for_current_card'):
             txt += self.mw.col.cardStats(lc)
         else:
@@ -74,7 +73,7 @@ def update_contents_of_sidebar(self):
         txt += "<p>"
         txt += revlogData_mod(self, lc, gc('num_of_revs', 3))
     if mw.state != 'review':
-        txt = _("No Card")
+        txt = "No Card"
     if self.night_mode_on:
         style = sidebar_style("styling_dark.css")
     else:

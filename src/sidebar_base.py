@@ -8,7 +8,6 @@ from aqt.qt import (
 )
 from anki.hooks import addHook
 from aqt.webview import AnkiWebView
-from anki.lang import _
 
 from .config import gc
 from .sidebar_set_contents import update_contents_of_sidebar
@@ -22,7 +21,7 @@ class ThinAnkiWebView(AnkiWebView):
         return QSize(gc("default width", 200), 100)
     # def contextMenuEvent(self, evt):
     #     m = QMenu(self)
-    #     a = m.addAction(_("Toggle Dark Mode"))
+    #     a = m.addAction"Toggle Dark Mode")
     #     a.triggered.connect(self.sidebar.onDarkMode)
     #     m.popup(QCursor.pos())
 
