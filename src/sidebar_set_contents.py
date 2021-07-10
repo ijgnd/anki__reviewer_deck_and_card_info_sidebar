@@ -1,3 +1,4 @@
+from anki.utils import pointVersion
 from anki.stats import CardStats
 from aqt import mw
 
@@ -33,7 +34,7 @@ def update_contents_of_sidebar(self):
 
         txt += "<h3>Current Card</h3>"
 
-        if gc('try_to_show_origvmod_scheduler'):
+        if gc('try_to_show_origvmod_scheduler') and pointVersion() < 45:
             # txt += '<h4>Scheduler Comparison</h4>'
             txt += text_for_scheduler_comparison(card, p)
             txt += "<hr>"
