@@ -36,7 +36,7 @@ class DockableWithClose(QDockWidget):
         QDockWidget.closeEvent(self, evt)
 
 
-class StatsSidebar(object):
+class StatsSidebar:
     def __init__(self, mw):
         self.mw = mw
         self.shown = False
