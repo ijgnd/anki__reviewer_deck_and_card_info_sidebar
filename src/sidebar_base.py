@@ -22,11 +22,11 @@ class ThinAnkiWebView(AnkiWebView):
         self.sidebar = sidebar
     def sizeHint(self):
         return QSize(gc("default width", 200), 100)
-    def contextMenuEvent(self, evt):
-        m = QMenu(self)
-        a = m.addAction("Hello")
-        a.triggered.connect(self.sidebar.on_hello)
-        m.popup(QCursor.pos())
+    # def contextMenuEvent(self, evt):
+    #     m = QMenu(self)
+    #     a = m.addAction("Hello")
+    #     a.triggered.connect(self.sidebar.on_hello)
+    #     m.popup(QCursor.pos())
 
 
 class DockableWithClose(QDockWidget):
@@ -81,9 +81,6 @@ class StatsSidebar:
 
     def _remDockable(self, dock):
         self.mw.removeDockWidget(dock)
-
-    def on_hello(self):
-        tooltip("hellllo")
 
     def show(self):
         if not self.shown:
