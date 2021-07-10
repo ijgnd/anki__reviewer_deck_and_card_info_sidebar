@@ -1,13 +1,15 @@
 import aqt 
-from aqt import mw
 from aqt.qt import (
+    QCursor,
     QDockWidget,
+    QMenu,
     QSize,
     Qt,
     pyqtSignal,
 )
 from anki.hooks import addHook
 from aqt.webview import AnkiWebView
+from aqt.utils import tooltip
 
 from .config import gc
 from .sidebar_set_contents import update_contents_of_sidebar
@@ -19,11 +21,11 @@ class ThinAnkiWebView(AnkiWebView):
         self.sidebar = sidebar
     def sizeHint(self):
         return QSize(gc("default width", 200), 100)
-    # def contextMenuEvent(self, evt):
-    #     m = QMenu(self)
-    #     a = m.addAction"Toggle Dark Mode")
-    #     a.triggered.connect(self.sidebar.onDarkMode)
-    #     m.popup(QCursor.pos())
+    def contextMenuEvent(self, evt):
+        m = QMenu(self)
+        a = m.addAction("Hello")
+        a.triggered.connect(self.sidebar.on_hello)
+        m.popup(QCursor.pos())
 
 
 class DockableWithClose(QDockWidget):
@@ -78,6 +80,9 @@ class StatsSidebar(object):
 
     def _remDockable(self, dock):
         self.mw.removeDockWidget(dock)
+
+    def on_hello(self):
+        tooltip("hellllo")
 
     def show(self):
         if not self.shown:
