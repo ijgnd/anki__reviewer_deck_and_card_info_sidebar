@@ -7,7 +7,7 @@ from .helper_functions import (
     due_day,
     fmt_long_string,
     percent_overdue,
-    valueForOverdue,
+    value_for_overdue,
     timespan,
 )
 from .config import gc
@@ -26,7 +26,7 @@ def current_card_deck_properties(card):
         formatted_steps += ' -- ' + timespan(i * 60)
 
 
-    #############
+    ############# noqa
     # from anki.stats.py
     (cnt, total) = mw.col.db.first(
         "select count(), sum(time)/1000 from revlog where cid = ?", card.id)
@@ -65,9 +65,9 @@ def current_card_deck_properties(card):
     p["total"] = total
     p["card_ivl_str"] = str(card.ivl)
     p["dueday"] = str(due_day(card))
-    p["value_for_overdue"] = str(valueForOverdue(card))
+    p["value_for_overdue"] = str(value_for_overdue(card))
     p["overdue_percent"] = str(percent_overdue(card))
-    p["actual_ivl"] = str(card.ivl + valueForOverdue(card))
+    p["actual_ivl"] = str(card.ivl + value_for_overdue(card))
     p["c_type"] = card.type
     p["deckname"] = mw.col.decks.get(card.did)['name']
     p["deckname_fmt"] = fmt_long_string(
@@ -77,9 +77,9 @@ def current_card_deck_properties(card):
     p["now"] = time.strftime('%Y-%m-%d %H:%M', time.localtime(card.id/1000))
     p["conf"] = conf
     # Deck Options
-    p["d_OptionGroupID"] = conf.get('id',"")
+    p["d_OptionGroupID"] = conf.get('id', "")
     p["d_OptionGroupName"] = conf.get('name', "")
-    p["d_OptionGroupName_fmt"] = fmt_long_string(conf.get('name',""), gc('optiongroup_names_length', 20))
+    p["d_OptionGroupName_fmt"] = fmt_long_string(conf.get('name', ""), gc('optiongroup_names_length', 20))
     p["d_IgnoreAnsTimesLonger"] = conf.get("maxTaken", "")
     p["d_ShowAnswerTimer"] = conf.get("timer", "")
     p["d_Autoplay"] = conf.get("autoplay", "")
@@ -92,8 +92,8 @@ def current_card_deck_properties(card):
     p["d_new_steps_fmt"] = formatted_steps
     p["d_new_order"] = conf.get('new', {}).get('order', "")
     p["d_new_NewPerDay"] = conf.get('new', {}).get('perDay', "")
-    p["d_new_GradIvl"] = str( conf.get('new', {}).get('ints', ["", ""])[0] )
-    p["d_new_EasyIvl"] = str( conf.get('new', {}).get('ints', ["", ""])[1] )
+    p["d_new_GradIvl"] = str( conf.get('new', {}).get('ints', ["", ""])[0] )  # noqa
+    p["d_new_EasyIvl"] = str( conf.get('new', {}).get('ints', ["", ""])[1] )  # noqa
     p["d_new_StartingEase"] = conf.get('new', {}).get('initialFactor', 0) / 10
     p["d_new_BurySiblings"] = conf.get('new', {}).get('bury')
     p["d_new_sep"] = conf.get('new', {}).get("separate", "")  # unused

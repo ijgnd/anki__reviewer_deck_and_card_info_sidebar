@@ -47,7 +47,7 @@ def due_day(card):
         return time.strftime("%Y-%m-%d", time.localtime(mydue))
 
 
-def valueForOverdue(card):
+def value_for_overdue(card):
     # warrior mode only uses:
     # return mw.col.sched._daysLate(card)
     # doesn't work in filtered deck for me for a card with these properties
@@ -60,24 +60,26 @@ def valueForOverdue(card):
     # Advanced Browser has overdue_days in  custom_fields.py : Advantage ??
     # https://github.com/hssm/advanced-browser/blob/9ffa602171a94e5e06ece9e5959c5ed3f74c0241/advancedbrowser/advancedbrowser/custom_fields.py#L225
     # not good either because cards in filtered decks can be overdue, too
-        # def valueForOverdue(self, odid, queue, type, due):
-        # if odid or queue == 1:
-        #     return
-        # elif queue == 0 or type == 0:
-        #     return
-        # elif queue in (2,3) or (type == 2 and queue < 0):
-        #     diff = due - mw.col.sched.today
-        #     if diff < 0:
-        #         return diff * -1
-        #     else:
-        #         return
+    """
+        def valueForOverdue(self, odid, queue, type, due):
+        if odid or queue == 1:
+            return
+        elif queue == 0 or type == 0:
+            return
+        elif queue in (2,3) or (type == 2 and queue < 0):
+            diff = due - mw.col.sched.today
+            if diff < 0:
+                return diff * -1
+            else:
+                return
+    """
 
     myvalue = 0
-    if card.queue in (0,1) or card.type == 0:
+    if card.queue in (0, 1) or card.type == 0:
         myvalue = 0
-    elif card.odue and (card.queue in (2,3) or (type == 2 and card.queue < 0)):
+    elif card.odue and (card.queue in (2, 3) or (type == 2 and card.queue < 0)):
         myvalue = card.odue
-    elif card.queue in (2,3) or (card.type == 2 and card.queue < 0):
+    elif card.queue in (2, 3) or (card.type == 2 and card.queue < 0):
         myvalue = card.due
     if myvalue:
         diff = myvalue - mw.col.sched.today
@@ -91,7 +93,7 @@ def valueForOverdue(card):
 
 
 def percent_overdue(card):
-    overdue = valueForOverdue(card)
+    overdue = value_for_overdue(card)
     ivl = card.ivl
     if ivl > 0:
         return "{0:.2f}".format((overdue+ivl)/ivl*100)
@@ -99,31 +101,30 @@ def percent_overdue(card):
         return "0"
 
 
-def fmt_long_string(name, value):
-    l = 0
-    u = value
+def fmt_long_string(name, max_len):
+    cur_pos = 0
     out = ""
-    while l < len(name):
-        out += name[l:l+u] + '\n'
-        l += u
+    while cur_pos < len(name):
+        out += name[cur_pos:cur_pos+max_len] + '\n'
+        cur_pos += max_len
     return out.rstrip('\n')
 
 
 def fmt_as_str__maybe_in_critical_color(value, lower, upper, usespan=False, invert=False):
-    valueInt = int(value)
-    valueStr = str(value)
+    value_int = int(value)
+    value_str = str(value)
     tag = "span" if usespan else "div"
     lowclass = "critical_color_upper" if invert else "critical_color_lower"
     highclass = "critical_color_lower" if invert else "critical_color_upper"
     if gc('highlight_colors', False):
-        if valueInt <= lower:
-            return f"<{tag} class='{lowclass}'>{valueStr}</{tag}>"
-        elif valueInt >= upper:
-            return f"<{tag} class='{highclass}'>{valueStr}</{tag}>"
+        if value_int <= lower:
+            return f"<{tag} class='{lowclass}'>{value_str}</{tag}>"
+        elif value_int >= upper:
+            return f"<{tag} class='{highclass}'>{value_str}</{tag}>"
         else:
-            return valueStr
+            return value_str
     else:
-        return valueStr
+        return value_str
 
 
 def make_two_column_table(d):
@@ -182,7 +183,7 @@ def deck_name_and_source_for_filtered(card, p):
 # for debugging
 def show_info_length_of_sublists(lol):
     mystr = ""
-    def sublist_length(s):
+    def sublist_length(s):  # noqa
         out = ""
         for e in s:
             out += str(len(e)) + ' '
@@ -200,7 +201,7 @@ def sidebar_style(file):
     return mystyle + " td { font-size: 80%; }"
 
 
-def timespan(t, context = FormatTimeSpanContext.INTERVALS):
+def timespan(t, context=FormatTimeSpanContext.INTERVALS):
     """for change from https://github.com/ankitects/anki/commit/89dde3aeb0c1f94b912b3cb2659ec0d4bffb4a1c"""
     if pointVersion() < 28:
         return mw.col.backend.format_time_span(t, context)

@@ -1,5 +1,4 @@
 from anki.utils import pointVersion
-from anki.stats import CardStats
 from aqt import mw
 
 from .card_deck_properties import current_card_deck_properties
@@ -15,7 +14,7 @@ from .helper_functions import (
     deck_name_and_source_for_filtered,
     sidebar_style
 )
-from .revlog import revlogData_mod
+from .revlog import revlog_data_mod
 
 
 def update_contents_of_sidebar(self):
@@ -57,7 +56,7 @@ def update_contents_of_sidebar(self):
         else:
             txt += mini_card_stats(card, p, True)
         txt += "<p>"
-        txt += revlogData_mod(self, card, gc('num_of_revs', 3))
+        txt += revlog_data_mod(self, card, gc('num_of_revs', 3))
 
     try:
         lc = self.mw.reviewer.lastCard()
@@ -72,7 +71,7 @@ def update_contents_of_sidebar(self):
             lp = current_card_deck_properties(lc)
             txt += mini_card_stats(lc, lp, False)
         txt += "<p>"
-        txt += revlogData_mod(self, lc, gc('num_of_revs', 3))
+        txt += revlog_data_mod(self, lc, gc('num_of_revs', 3))
     if mw.state != 'review':
         txt = "No Card"
     if self.night_mode_on:

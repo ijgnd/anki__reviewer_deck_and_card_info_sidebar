@@ -77,11 +77,10 @@ from aqt.qt import (
 
 from .config import gc
 from .sidebar_base import StatsSidebar
-from .toolbar import getMenu
+from .toolbar import get_menu
 
 
 cs = StatsSidebar(mw)
-
 
 
 if gc("open on first review after start"):
@@ -93,7 +92,7 @@ else:
 def maybe_restore_sidebar(new_state, old_state):
     if new_state == "review" and sidebar_visibility:
         cs.show()
-state_did_change.append(maybe_restore_sidebar)
+state_did_change.append(maybe_restore_sidebar)  # noqa
 
 
 # not necessary because of hooks StatsSidebar
@@ -101,20 +100,20 @@ state_did_change.append(maybe_restore_sidebar)
 # gui_hooks.state_will_change.append(store_sidebar_visibility)
 
 
-def cardStats(on):
+def card_stats(on):
     global sidebar_visibility
     cs.toggle()
     sidebar_visibility ^= True
 
 
 alreadyrun = False
-def mainSetupMenus():
+def main_setup_menus():  # noqa
     global alreadyrun
     if alreadyrun:
         return
     alreadyrun = True
 
-    view = getMenu(mw, "&View")
+    view = get_menu(mw, "&View")
 
     action = QAction(mw)
     action.setText("Card Stats")
@@ -122,11 +121,11 @@ def mainSetupMenus():
     action.setChecked(sidebar_visibility)
     action.setShortcut(QKeySequence("Shift+C"))
     view.addAction(action)
-    action.toggled.connect(cardStats)
-profile_did_open.append(mainSetupMenus)
+    action.toggled.connect(card_stats)
+profile_did_open.append(main_setup_menus)  # noqa
 
 
-def hideSidebar():
+def hide_sidebar():
     global sidebar_visibility
     cs.hide()
-profile_will_close.append(hideSidebar)
+profile_will_close.append(hide_sidebar)  # noqa

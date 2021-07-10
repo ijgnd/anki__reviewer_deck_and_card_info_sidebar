@@ -3,22 +3,19 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 
-from aqt import QMenu
-
-
-def getMenu(parent, menuName):
-    menubar = parent.form.menubar
-    for a in menubar.actions():
-        if menuName == a.text():
+def get_menu(parent, menu_name):
+    bar = parent.form.menubar
+    for a in bar.actions():
+        if menu_name == a.text():
             return a.menu()
     else:
-        return menubar.addMenu(menuName)
+        return bar.addMenu(menu_name)
 
 
-def getAction(parent, actionName):
-    menubar = parent.form.menubar
-    for a in menubar.actions():
-        if actionName == a.text():
+def get_action(parent, action_name):
+    bar = parent.form.menubar
+    for a in bar.actions():
+        if action_name == a.text():
             return a
     else:
-        return menubar.addAction(actionName)
+        return bar.addAction(action_name)
