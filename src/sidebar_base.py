@@ -59,12 +59,12 @@ class StatsSidebar:
     def _addDockable(self, title, w):
         dock = DockableWithClose(title, self.mw)
         dock.setObjectName(title)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        dock.setFeatures(QDockWidget.DockWidgetClosable)
+        dock.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
+        dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetClosable)
         dock.setWidget(w)
         if self.mw.width() < 600:
             self.mw.resize(QSize(600, self.mw.height()))
-        self.mw.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.mw.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         if self.night_mode_on:
             # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
             # I think I can't style the divider since this like a window border which are
