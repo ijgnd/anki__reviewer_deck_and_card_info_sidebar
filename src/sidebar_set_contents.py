@@ -9,7 +9,7 @@ from .cardstats import (
 )
 from .deckoptions import long_deck_options, text_for_short_options
 from .schedulercomparison import text_for_scheduler_comparison
-from .config import gc
+from .config import anki_21_version, gc
 from .helper_functions import (
     deck_name_and_source_for_filtered,
     sidebar_style
@@ -24,7 +24,8 @@ def update_contents_of_sidebar(self):
     card = self.mw.reviewer.card
     if card:
         if gc('show total cards studied today'):
-            cutoff = (mw.col.sched.dayCutoff - 86400) * 1000
+            anki_cutoff = mw.col.sched.dayCutoff if anki_21_version < 50 else mw.col.sched.day_cutoff
+            cutoff = (anki_cutoff - 86400) * 1000
             sqlstring = f"select count(id) from revlog where id > {cutoff}"
             total_today = mw.col.db.first(sqlstring)[0]
             txt += f'<div style="font-size:85%; text-align:left;"><b>{total_today}</b> cards studied today.</div>'
