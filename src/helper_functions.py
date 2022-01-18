@@ -4,12 +4,11 @@ import time
 from collections import OrderedDict
 
 from anki.rsbackend import FormatTimeSpanContext
-from anki.utils import pointVersion
 from aqt import mw
 from aqt.utils import showInfo
 
 
-from .config import gc
+from .config import anki_21_version, gc
 
 
 # about due_day
@@ -203,7 +202,7 @@ def sidebar_style(file):
 
 def timespan(t, context=FormatTimeSpanContext.INTERVALS):
     """for change from https://github.com/ankitects/anki/commit/89dde3aeb0c1f94b912b3cb2659ec0d4bffb4a1c"""
-    if pointVersion() < 28:
+    if anki_21_version < 28:
         return mw.col.backend.format_time_span(t, context)
     else:
         return mw.col.format_timespan(t, context)

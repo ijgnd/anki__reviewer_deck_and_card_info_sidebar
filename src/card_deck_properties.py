@@ -1,7 +1,6 @@
 import time
 from types import SimpleNamespace
 
-from anki.utils import pointVersion
 from aqt import mw
 
 from .helper_functions import (
@@ -11,12 +10,12 @@ from .helper_functions import (
     value_for_overdue,
     timespan,
 )
-from .config import gc
+from .config import anki_21_version, gc
 
 
 def current_card_deck_properties(card):
     def get_did(did):
-        if pointVersion() < 45:
+        if anki_21_version < 45:
             return mw.col.decks.confForDid(did)
         else:
             return mw.col.decks.config_dict_for_deck_id(did)
@@ -59,7 +58,7 @@ def current_card_deck_properties(card):
     p["c_TotalTime"] = timespan(total) if cnt else ""
     p["c_Position"] = card.due if card.queue == 0 else ""
     p["c_CardType"] = card.template()['name']
-    p["c_NoteType"] = card.model()['name'] if pointVersion() < 45 else card.note_type()['name']
+    p["c_NoteType"] = card.model()['name'] if anki_21_version < 45 else card.note_type()['name']
     p["c_Deck"] = mw.col.decks.name(card.did)
     p["c_NoteID"] = card.nid
     p["c_CardID"] = card.id

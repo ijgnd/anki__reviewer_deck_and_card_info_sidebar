@@ -8,11 +8,10 @@ from aqt.qt import (
     pyqtSignal,
 )
 from anki.hooks import addHook
-from anki.utils import pointVersion
 from aqt.webview import AnkiWebView
 from aqt.utils import tooltip
 
-from .config import gc
+from .config import anki_21_version, gc
 from .sidebar_set_contents import update_contents_of_sidebar
 
 
@@ -118,7 +117,7 @@ class StatsSidebar:
         browser = aqt.dialogs.open("Browser", self.mw)
         browser.form.searchEdit.lineEdit().setText(searchterm)
         browser.onSearchActivated()
-        if pointVersion() < 45:
+        if anki_21_version < 45:
             if u'noteCrt' in browser.model.activeCols:
                 col_index = browser.model.activeCols.index(u'noteCrt')
                 browser.onSortChanged(col_index, True)
