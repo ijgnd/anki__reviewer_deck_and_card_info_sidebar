@@ -1,3 +1,4 @@
+import aqt
 from aqt import mw
 
 from .card_deck_properties import current_card_deck_properties
@@ -74,7 +75,7 @@ def update_contents_of_sidebar(self):
         txt += revlog_data_mod(self, lc, gc('num_of_revs', 3))
     if mw.state != 'review':
         txt = "No Card"
-    if self.night_mode_on:
+    if aqt.theme.theme_manager.get_night_mode():   # self.night_mode_on:
         style = sidebar_style("styling_dark.css")
     else:
         style = sidebar_style("styling.css")
