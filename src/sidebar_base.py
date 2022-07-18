@@ -64,7 +64,7 @@ class StatsSidebar:
         if self.mw.width() < 600:
             self.mw.resize(QSize(600, self.mw.height()))
         self.mw.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
-        if self.night_mode_on:
+        if aqt.theme.theme_manager.get_night_mode():  # if self.night_mode_on:
             # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
             # I think I can't style the divider since this like a window border which are
             # owned by the OS?
