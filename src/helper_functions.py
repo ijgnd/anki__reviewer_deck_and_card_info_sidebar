@@ -206,3 +206,53 @@ def timespan(t, context=FormatTimeSpanContext.INTERVALS):
         return mw.col.backend.format_time_span(t, context)
     else:
         return mw.col.format_timespan(t, context)
+
+
+def number_of_cards_studied_today():
+    '''
+    my old simple code: wrong stats, e.g. if i forget many cards in the browser ...
+        anki_cutoff = mw.col.sched.dayCutoff if anki_21_version < 50 else mw.col.sched.day_cutoff
+        cutoff = (anki_cutoff - 86400) * 1000
+        sqlstring = f"select count(id) from revlog where id > {cutoff}"
+        total_today = mw.col.db.first(sqlstring)[0]
+        return total_today
+
+
+    https://ankiweb.net/shared/info/2133933791
+    The main window has a statistic that says "Studied X cards in Y minutes today." This counts repeated cards in the total.
+    In other words, if you learnt 50 distinct cards today, but repeated them each twice, Anki tells you you studied 100 cards today.
+    This overestimates how many distinct pieces of knowledge you reviewed.
+
+    #Made by Joseph Yasmeh for Anki 2.0 and 2.1 on Mac. July 12 2019.
+    #GNU license 3
+    
+
+        from aqt.deckbrowser import*
+        from anki.utils import fmtTimeSpan
+
+        def _renderStats2(self):
+                cards, thetime = self.mw.col.db.first("""
+        select count(distinct cid), sum(time)/1000 from revlog
+        where id > ?""", (self.mw.col.sched.dayCutoff-86400)*1000)
+                cards = cards or 0
+                thetime = thetime or 0
+                msgp1 = ngettext("<!--studied-->%d distinct card", "<!--studied-->%d distinct cards", cards) % cards
+                buf = _("Studied %(a)s in %(b)s today.") % dict(a=msgp1,
+                                                                b=fmtTimeSpan(thetime, unit=1))
+                return buf
+
+        orig__renderStats = DeckBrowser._renderStats
+        DeckBrowser._renderStats = _renderStats2
+    '''
+
+    anki_cutoff = mw.col.sched.dayCutoff if anki_21_version < 50 else mw.col.sched.day_cutoff
+    cutoff = (anki_cutoff - 86400) * 1000
+    
+    sql_string_unique_today = f"""select count(distinct cid) from revlog where id > {cutoff} and ease > 0"""
+    total_today_unique = mw.col.db.first(sql_string_unique_today)[0]
+    
+    
+    sqlstring = f"select count(id) from revlog where id > {cutoff} and ease > 0"
+    total_today = mw.col.db.first(sqlstring)[0]
+    
+    return total_today_unique, total_today
