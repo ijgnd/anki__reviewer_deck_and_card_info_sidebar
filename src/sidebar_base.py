@@ -3,6 +3,7 @@ from aqt.qt import (
     QCursor,
     QDockWidget,
     QMenu,
+    QPalette,
     QSize,
     Qt,
     pyqtSignal,
@@ -11,6 +12,7 @@ from anki.hooks import addHook
 from aqt.webview import AnkiWebView
 from aqt.utils import tooltip
 
+from .anki_version_detection import anki_point_version
 from .config import anki_21_version, gc
 from .sidebar_set_contents import update_contents_of_sidebar
 
@@ -46,6 +48,37 @@ class StatsSidebar:
         addHook("deckClosing", self.hide)
         addHook("reviewCleanup", self.hide)
         addHook("night_mode_state_changed", self.refresh)
+        if anki_point_version >= 50:
+            aqt.gui_hooks.theme_did_change.append(self.setup_style)
+    
+    def setup_style(self):  # theme change in Anki - only in .50+
+        if self.shown:
+            if aqt.theme.theme_manager.get_night_mode():  # if self.night_mode_on:
+                self.set_dark_style()
+            else:
+                self.set_day_style()
+
+    def set_dark_style(self):
+        # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
+        # I think I can't style the divider since this like a window border which are
+        # owned by the OS?
+        # A QSplitter can be styled but I think this would require to
+        # change main.py/setupMainWindow which I don't want to do.
+        bgcolor = QPalette().window().color().name()
+        if self.shown:
+            self.shown.setStyleSheet("""
+            QWidget::title {
+                color: white;
+                background-color: #272828;
+            }
+            """)
+            update_contents_of_sidebar(self)
+
+    def set_day_style(self):
+        bgcolor = QPalette().window().color().name()
+        if self.shown:
+            self.shown.setStyleSheet("")
+            update_contents_of_sidebar(self)
 
     def refresh(self, nm_state):
         self.night_mode_on=nm_state
@@ -64,27 +97,32 @@ class StatsSidebar:
         if self.mw.width() < 600:
             self.mw.resize(QSize(600, self.mw.height()))
         self.mw.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
-        if aqt.theme.theme_manager.get_night_mode():  # if self.night_mode_on:
-            # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
-            # I think I can't style the divider since this like a window border which are
-            # owned by the OS?
-            # A QSplitter can be styled but I think this would require to
-            # change main.py/setupMainWindow which I don't want to do.
-            dock.setStyleSheet("""
-            QWidget::title {
-                color: white;
-                background-color: #272828;
-            }
-            """)
+        if anki_point_version <= 49:
+            if aqt.theme.theme_manager.get_night_mode():  # if self.night_mode_on:
+                # https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qdockwidget
+                # I think I can't style the divider since this like a window border which are
+                # owned by the OS?
+                # A QSplitter can be styled but I think this would require to
+                # change main.py/setupMainWindow which I don't want to do.
+                dock.setStyleSheet("""
+                QWidget::title {
+                    color: white;
+                    background-color: #272828;
+                }
+                """)
         return dock
 
     def _remDockable(self, dock):
+        if anki_point_version >= 50:
+            aqt.gui_hooks.theme_did_change.remove(self.setup_style)
         self.mw.removeDockWidget(dock)
 
     def show(self):
         if not self.shown:
             self.web = ThinAnkiWebView(self)
             self.shown = self._addDockable("", self.web)
+            if anki_point_version >= 50:
+                self.setup_style()
             self.shown.closed.connect(self._onClosed)
             self.web.onBridgeCmd = self.myLinkHandler
         update_contents_of_sidebar(self)
