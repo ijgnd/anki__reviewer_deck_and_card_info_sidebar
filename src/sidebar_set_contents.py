@@ -16,6 +16,32 @@ from .helper_functions import (
 )
 from .revlog import revlog_data_mod
 
+import os
+
+def style_script_path() -> str:
+    """Returns path to the script that adjusts the last card table style
+
+    Returns
+    -------
+    string
+        The absolute path to the script
+    """
+    dir_path = os.path.dirname(__file__)
+    return os.path.join(dir_path, 'adjust_styles.js')
+
+def style_script_contents() -> str:
+    """Returns the content of a JavaScript that adjusts the last card table style
+
+    Returns
+    -------
+    string
+        The contents of the script file
+    """
+    script_path = style_script_path()
+    with open(script_path) as file:
+        data = file.read()
+    return data
+
 
 def update_contents_of_sidebar(self):
     if not self.shown:
@@ -78,6 +104,8 @@ def update_contents_of_sidebar(self):
         style = sidebar_style("styling_dark.css")
     else:
         style = sidebar_style("styling.css")
+    # add contents of our adjustment script
+    style_adj_script = style_script_contents()
     self.web.setHtml("""
 <html>
 <head>
@@ -89,5 +117,6 @@ def update_contents_of_sidebar(self):
 <center>
 %s
 </center>
+<script>%s</script>
 </body>
-</html>""" % (style, txt))
+</html>""" % (style, txt, style_adj_script))
