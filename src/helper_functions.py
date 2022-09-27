@@ -3,6 +3,7 @@ import io
 import time
 from collections import OrderedDict
 
+from anki.consts import *
 from anki.rsbackend import FormatTimeSpanContext
 from aqt import mw
 from aqt.utils import showInfo
@@ -73,18 +74,22 @@ def value_for_overdue(card):
                 return
     """
 
-    myvalue = 0
-    if card.queue in (0, 1) or card.type == 0:
-        myvalue = 0
-    elif card.odue and (card.queue in (2, 3) or (type == 2 and card.queue < 0)):
-        myvalue = card.odue
-    elif card.queue in (2, 3) or (card.type == 2 and card.queue < 0):
-        myvalue = card.due
-    if myvalue:
-        diff = myvalue - mw.col.sched.today
+    def card_queue_is_negative(queue):
+        if queue in [QUEUE_TYPE_MANUALLY_BURIED, QUEUE_TYPE_SIBLING_BURIED, QUEUE_TYPE_SUSPENDED]:
+            return True
+
+    due_value = 0
+    if card.queue in (QUEUE_TYPE_NEW, QUEUE_TYPE_LRN) or card.type == CARD_TYPE_NEW:
+        due_value = 0
+    elif card.odue and (card.queue in (QUEUE_TYPE_REV, QUEUE_TYPE_DAY_LEARN_RELEARN) or (type == CARD_TYPE_REV and card_queue_is_negative(card.queue))):
+        due_value = card.odue
+    elif card.queue in (QUEUE_TYPE_REV, QUEUE_TYPE_DAY_LEARN_RELEARN) or (card.type == CARD_TYPE_REV and card_queue_is_negative(card.queue)):
+        due_value = card.due
+    if due_value:
+        diff = due_value - mw.col.sched.today
         if diff < 0:
-            a = diff * - 1
-            return max(0, a)
+            diff = diff * - 1
+            return max(0, diff)
         else:
             return 0
     else:
