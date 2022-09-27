@@ -83,10 +83,9 @@ def value_for_overdue(card):
     if card.queue in (QUEUE_TYPE_REV, QUEUE_TYPE_DAY_LEARN_RELEARN) or (card.type == CARD_TYPE_REV and card.queue < 0):  # card_queue_is_negative(card.queue)):
         due_value = card.odue if card.odue else card.due
     if due_value:
-        diff = due_value - mw.col.sched.today
-        if diff < 0:
-            diff = diff * - 1
-            return max(0, diff)
+        diff = mw.col.sched.today - due_value
+        if diff > 0:
+            return diff
         else:
             return 0
     else:
