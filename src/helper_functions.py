@@ -75,16 +75,13 @@ def value_for_overdue(card):
     """
 
     def card_queue_is_negative(queue):
-        if queue in [QUEUE_TYPE_MANUALLY_BURIED, QUEUE_TYPE_SIBLING_BURIED, QUEUE_TYPE_SUSPENDED]:
+        if queue in [QUEUE_TYPE_MANUALLY_BURIED, QUEUE_TYPE_SIBLING_BURIED, QUEUE_TYPE_SUSPENDED]:  # -3, -2, -1
             return True
 
     due_value = 0
-    if card.queue in (QUEUE_TYPE_NEW, QUEUE_TYPE_LRN) or card.type == CARD_TYPE_NEW:
-        due_value = 0
-    elif card.odue and (card.queue in (QUEUE_TYPE_REV, QUEUE_TYPE_DAY_LEARN_RELEARN) or (type == CARD_TYPE_REV and card_queue_is_negative(card.queue))):
-        due_value = card.odue
-    elif card.queue in (QUEUE_TYPE_REV, QUEUE_TYPE_DAY_LEARN_RELEARN) or (card.type == CARD_TYPE_REV and card_queue_is_negative(card.queue)):
-        due_value = card.due
+    # this if condition is taken from https://github.com/ankipalace/advanced-browser/blob/d3b87cdfe2163cbbcaea87f89f278a4cbd788f4c/advancedbrowser/advancedbrowser/advanced_fields.py#L363
+    if card.queue in (QUEUE_TYPE_REV, QUEUE_TYPE_DAY_LEARN_RELEARN) or (card.type == CARD_TYPE_REV and card.queue < 0):  # card_queue_is_negative(card.queue)):
+        due_value = card.odue if card.odue else card.due
     if due_value:
         diff = due_value - mw.col.sched.today
         if diff < 0:
